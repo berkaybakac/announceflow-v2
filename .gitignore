@@ -1,0 +1,64 @@
+# System & Runtime
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+Thumbs.db
+
+# Development Environment
+.env
+.env.*
+!.env.example
+.venv/
+env/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project Config & Data
+config.json
+*.db
+*.sqlite
+*.db-journal
+
+# Logs
+*.log
+logs/
+
+# Testing & QA
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Docker
+docker-compose.override.yml
+
+# Media
+media/*
+!media/.gitkeep
+
+# Mosquitto (MQTT)
+mosquitto/data/
+mosquitto/log/
+
+# Agent Build Artifacts
+agent/build/
+agent/dist/
+*.exe
+# NOTE: *.spec files are deliberately tracked for build configuration
+
+# Documentation & Notes (User requested exclusion)
+docs/
+README.md
+DEVICE_NOTES.md
+README.backup.md
+
+# Legacy & Reference (Excluded from V2 Repo)
+legacy_reference/
+announceflow copy/
