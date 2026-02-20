@@ -13,6 +13,14 @@ pydantic-settings>=2.3.0
 
 # Security
 argon2-cffi>=23.1.0
+PyJWT>=2.8.0
+python-multipart>=0.0.9
 
 # Logging
 python-json-logger>=2.0.7
+
+# Testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+httpx>=0.27.0
+aiosqlite>=0.19.0

@@ -19,7 +19,7 @@ class BranchRead(BaseModel):
     district: str
     group_tag: str | None
     token: str
-    status: bool
+    is_active: bool
     volume_music: int
     volume_announce: int
 

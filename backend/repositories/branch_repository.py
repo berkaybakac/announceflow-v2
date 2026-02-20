@@ -31,3 +31,9 @@ class BranchRepository(BaseRepository[Branch]):
             select(Branch).where(Branch.group_tag == group_tag)
         )
         return result.scalars().all()
+
+    async def get_by_token(self, token: str) -> Branch | None:
+        result = await self.session.execute(
+            select(Branch).where(Branch.token == token)
+        )
+        return result.scalar_one_or_none()

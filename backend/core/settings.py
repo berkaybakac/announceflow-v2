@@ -18,9 +18,11 @@ class Settings(BaseSettings):
     APP_NAME: str = "AnnounceFlow"
     DEBUG: bool = False
 
-    # JWT (Adim 2'de kullanilacak)
+    # JWT
     SECRET_KEY: str = Field(..., min_length=32)
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 saat (dashboard)
+    DEVICE_TOKEN_EXPIRE_DAYS: int = 30  # Agent
 
 
 settings = Settings()
