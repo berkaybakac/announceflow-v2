@@ -1,3 +1,4 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,14 +12,14 @@ class Settings(BaseSettings):
     )
 
     # Database (async — asyncpg)
-    DATABASE_URL: str = "postgresql+asyncpg://admin:admin@localhost:5433/announceflow"
+    DATABASE_URL: str = Field(...)
 
     # App
     APP_NAME: str = "AnnounceFlow"
     DEBUG: bool = False
 
     # JWT (Adim 2'de kullanilacak)
-    SECRET_KEY: str = "change-me-in-production"
+    SECRET_KEY: str = Field(..., min_length=32)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
 
