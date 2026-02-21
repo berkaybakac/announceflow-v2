@@ -1,5 +1,6 @@
 from collections.abc import AsyncGenerator
 
+import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -105,6 +106,18 @@ async def inactive_branch(db_session: AsyncSession) -> Branch:
     await db_session.commit()
     await db_session.refresh(branch)
     return branch
+
+
+@pytest.fixture(autouse=True)
+def override_media_paths(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "backend.core.settings.settings.MEDIA_STORAGE_PATH",
+        str(tmp_path / "media"),
+    )
+    monkeypatch.setattr(
+        "backend.core.settings.settings.MEDIA_TEMP_PATH",
+        str(tmp_path / "temp"),
+    )
 
 
 @pytest_asyncio.fixture

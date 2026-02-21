@@ -1,8 +1,17 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from backend.models.media import MediaType, TargetType
+
+
+class MediaFileCreate(BaseModel):
+    file_name: str
+    file_path: str
+    file_hash: str
+    type: MediaType
+    duration: int = 0
+    size_bytes: int = 0
 
 
 class MediaFileRead(BaseModel):
@@ -14,7 +23,15 @@ class MediaFileRead(BaseModel):
     file_hash: str
     type: MediaType
     duration: int
+    size_bytes: int
     created_at: datetime
+
+
+class MediaUploadResponse(BaseModel):
+    media_id: int
+    file_name: str
+    status: str
+    message: str
 
 
 class MediaTargetCreate(BaseModel):
@@ -31,4 +48,4 @@ class MediaTargetRead(MediaTargetCreate):
 
 
 class MediaFileWithTargetsRead(MediaFileRead):
-    targets: list[MediaTargetRead] = []
+    targets: list[MediaTargetRead] = Field(default_factory=list)

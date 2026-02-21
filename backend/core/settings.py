@@ -24,5 +24,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 saat (dashboard)
     DEVICE_TOKEN_EXPIRE_DAYS: int = 30  # Agent
 
+    # Media Storage (lokal dev icin goreceli, Docker'da .env ile /data/media override)
+    MEDIA_STORAGE_PATH: str = "./data/media"
+    MEDIA_TEMP_PATH: str = "./data/media/temp"
+    MAX_UPLOAD_SIZE_MB: int = 500
+
 
 settings = Settings()

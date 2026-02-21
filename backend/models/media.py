@@ -26,6 +26,7 @@ class MediaFile(IdMixin, Base):
     file_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     type: Mapped[MediaType] = mapped_column(Enum(MediaType), nullable=False)
     duration: Mapped[int] = mapped_column(Integer, default=0)
+    size_bytes: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now()
     )
