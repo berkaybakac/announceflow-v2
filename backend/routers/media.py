@@ -18,10 +18,13 @@ from backend.core.database import get_db
 from backend.core.settings import settings
 from backend.dependencies import get_current_user
 from backend.models.media import MediaFile, MediaType
+from backend.models.tts import TTSJob  # noqa: F811
 from backend.models.user import User
 from backend.repositories.media_repository import MediaRepository
+from backend.repositories.tts_repository import TTSJobRepository
 from backend.schemas.media import MediaUploadResponse
-from backend.services import media_service
+from backend.schemas.tts import TTSJobRead, TTSRequest
+from backend.services import media_service, tts_service
 
 router = APIRouter(prefix="/api/v1/media", tags=["media"])
 
@@ -102,3 +105,55 @@ async def upload_media(
         status="processing",
         message="Dosya alındı, normalizasyon kuyruğunda.",
     )
+
+
+# ---------------------------------------------------------------------------
+# TTS Endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.post(
+    "/tts",
+    response_model=TTSJobRead,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def create_tts_job(
+    background_tasks: BackgroundTasks,
+    body: TTSRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> TTSJobRead:
+    # 1. Create TTS job record
+    job = TTSJob(
+        text_input=body.text,
+        language=body.language,
+        voice_profile=body.voice_profile,
+    )
+    repo = TTSJobRepository(db)
+    job = await repo.create(job)
+    await db.commit()
+    await db.refresh(job)
+
+    # 2. Schedule background processing
+    background_tasks.add_task(tts_service.process_tts_job, job.id)
+
+    return TTSJobRead.model_validate(job)
+
+
+@router.get(
+    "/tts/{job_id}",
+    response_model=TTSJobRead,
+)
+async def get_tts_job(
+    job_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> TTSJobRead:
+    repo = TTSJobRepository(db)
+    job = await repo.get_by_id(job_id)
+    if job is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="TTS job bulunamadı.",
+        )
+    return TTSJobRead.model_validate(job)

@@ -19,6 +19,9 @@ python-multipart>=0.0.9
 # Async I/O
 aiofiles>=23.2.1
 
+# TTS (Coqui XTTS v2)
+TTS>=0.22.0
+
 # Logging
 python-json-logger>=2.0.7
 

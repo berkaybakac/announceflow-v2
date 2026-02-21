@@ -29,5 +29,9 @@ class Settings(BaseSettings):
     MEDIA_TEMP_PATH: str = "./data/media/temp"
     MAX_UPLOAD_SIZE_MB: int = 500
 
+    # TTS (Coqui XTTS v2)
+    TTS_MODEL_NAME: str = "tts_models/multilingual/multi-dataset/xtts_v2"
+    TTS_MAX_TEXT_LENGTH: int = 1000
+
 
 settings = Settings()
