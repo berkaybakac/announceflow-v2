@@ -1,3 +1,4 @@
+import os
 from collections.abc import AsyncGenerator
 
 import pytest
@@ -13,13 +14,18 @@ from backend.models.branch import Branch
 from backend.models.user import User
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///test.db"
+os.environ.setdefault("COQUI_TOS_AGREED", "1")
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 test_session_factory = async_sessionmaker(engine, expire_on_commit=False)
 
 
 @pytest_asyncio.fixture(autouse=True)
-async def setup_database():
+async def setup_database(request: pytest.FixtureRequest):
+    if request.node.get_closest_marker("tts_smoke"):
+        yield
+        return
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield

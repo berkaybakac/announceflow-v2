@@ -30,8 +30,10 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE_MB: int = 500
 
     # TTS (Coqui XTTS v2)
+    COQUI_TOS_AGREED: bool = False
     TTS_MODEL_NAME: str = "tts_models/multilingual/multi-dataset/xtts_v2"
     TTS_MAX_TEXT_LENGTH: int = 1000
+    TTS_VOICE_PROFILE_REGISTRY_PATH: str = "./backend/config/voice_profiles.json"
 
 
 settings = Settings()

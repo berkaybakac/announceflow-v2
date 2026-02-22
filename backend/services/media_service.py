@@ -8,6 +8,7 @@ from pathlib import Path
 
 import aiofiles
 from fastapi import UploadFile
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from backend.core.database import async_session_factory
 from backend.core.settings import settings
@@ -103,6 +104,7 @@ async def normalize_audio(
     temp_path: Path,
     output_path: Path,
     media_id: int,
+    session_factory: async_sessionmaker[AsyncSession] | None = None,
 ) -> None:
     """Background task: FFmpeg -14 LUFS normalization (EBU R128).
 
@@ -142,7 +144,8 @@ async def normalize_audio(
     duration = probe_result["duration_seconds"]
 
     # Update DB record with own session
-    async with async_session_factory() as session:
+    sf = session_factory or async_session_factory
+    async with sf() as session:
         try:
             repo = MediaRepository(session)
             media = await repo.get_by_id(media_id)

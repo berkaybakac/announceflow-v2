@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "default_profile": "tok_erkek_1",
+  "profiles": {
+    "tok_erkek_1": {
+      "type": "xtts_builtin",
+      "speaker_id": "Claribel Dervla",
+      "enabled": true
+    }
+  }
+}
