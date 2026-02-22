@@ -55,7 +55,6 @@ agent/dist/
 
 # Documentation & Notes (User requested exclusion)
 docs/
-README.md
 DEVICE_NOTES.md
 README.backup.md
 
