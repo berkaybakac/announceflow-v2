@@ -63,3 +63,9 @@ legacy_reference/
 announceflow copy/
 
 .claude
+demo_outputs/
+test.db
+backend/config/voice_profiles.local.json
+data/media/temp/*
+!data/media/temp/.gitkeep
+BACKLOG.md

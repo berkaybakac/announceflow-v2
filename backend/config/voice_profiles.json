@@ -1,10 +1,25 @@
 {
   "version": 1,
-  "default_profile": "tok_erkek_1",
+  "default_profile": "premium_market_tr",
   "profiles": {
+    "premium_market_tr": {
+      "type": "xtts_builtin",
+      "speaker_id": "Alexandra Hisakawa",
+      "enabled": true
+    },
+    "kadin_1": {
+      "type": "xtts_builtin",
+      "speaker_id": "Asya Anara",
+      "enabled": true
+    },
+    "erkek_1": {
+      "type": "xtts_builtin",
+      "speaker_id": "Eugenio Mataracı",
+      "enabled": true
+    },
     "tok_erkek_1": {
       "type": "xtts_builtin",
-      "speaker_id": "Claribel Dervla",
+      "speaker_id": "Eugenio Mataracı",
       "enabled": true
     }
   }
