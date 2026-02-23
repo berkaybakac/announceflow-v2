@@ -1,5 +1,6 @@
 from backend.models.base import Base
 from backend.models.branch import Branch, BranchSettings
+from backend.models.log import LogEntry
 from backend.models.media import MediaFile, MediaTarget, MediaType, TargetType
 from backend.models.prayer_time import PrayerTime
 from backend.models.schedule import Schedule
@@ -11,6 +12,7 @@ __all__ = [
     "User",
     "Branch",
     "BranchSettings",
+    "LogEntry",
     "MediaFile",
     "MediaTarget",
     "MediaType",

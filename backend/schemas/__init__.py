@@ -5,6 +5,7 @@ from backend.schemas.branch import (
     BranchSettingsRead,
     BranchWithSettingsRead,
 )
+from backend.schemas.log import LogBatchCreate, LogEntryCreate, LogEntryRead
 from backend.schemas.media import (
     MediaFileRead,
     MediaFileWithTargetsRead,
@@ -23,6 +24,9 @@ __all__ = [
     "BranchSettingsCreate",
     "BranchSettingsRead",
     "BranchWithSettingsRead",
+    "LogEntryCreate",
+    "LogBatchCreate",
+    "LogEntryRead",
     "MediaFileRead",
     "MediaTargetCreate",
     "MediaFileWithTargetsRead",
