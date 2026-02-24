@@ -21,7 +21,14 @@ from backend.schemas.media import (
     MediaTargetRead,
 )
 from backend.schemas.prayer_time import PrayerTimeRead
-from backend.schemas.schedule import ScheduleCreate, ScheduleRead
+from backend.schemas.schedule import (
+    ConflictCheckRequest,
+    ConflictCheckResponse,
+    PaginatedScheduleResponse,
+    ScheduleCreate,
+    ScheduleRead,
+    ScheduleUpdate,
+)
 from backend.schemas.user import UserCreate, UserRead
 
 __all__ = [
@@ -47,6 +54,10 @@ __all__ = [
     "MediaTargetRead",
     "ScheduleCreate",
     "ScheduleRead",
+    "ScheduleUpdate",
+    "ConflictCheckRequest",
+    "ConflictCheckResponse",
+    "PaginatedScheduleResponse",
     "PrayerTimeRead",
 ]
 

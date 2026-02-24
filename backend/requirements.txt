@@ -10,6 +10,7 @@ alembic>=1.13.0
 # Configuration & Validation
 pydantic>=2.7.0
 pydantic-settings>=2.3.0
+croniter>=2.0.0
 
 # Security
 argon2-cffi>=23.1.0

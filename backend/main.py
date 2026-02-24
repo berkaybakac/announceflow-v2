@@ -11,6 +11,7 @@ from backend.routers import (
     logs_router,
     manifest_router,
     media_router,
+    schedules_router,
     telemetry_router,
 )
 from backend.services.mqtt_listener import mqtt_listener_loop, reaper_loop
@@ -42,5 +43,6 @@ app.include_router(auth_router)
 app.include_router(logs_router)
 app.include_router(manifest_router)
 app.include_router(media_router)
+app.include_router(schedules_router)
 app.include_router(telemetry_router)
 
