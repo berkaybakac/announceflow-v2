@@ -6,6 +6,14 @@ from backend.schemas.branch import (
     BranchWithSettingsRead,
 )
 from backend.schemas.log import LogBatchCreate, LogEntryCreate, LogEntryRead
+from backend.schemas.manifest import (
+    ManifestMediaItem,
+    ManifestResponse,
+    ManifestScheduleItem,
+    ManifestSettingsItem,
+    SyncConfirmRequest,
+    SyncConfirmResponse,
+)
 from backend.schemas.media import (
     MediaFileRead,
     MediaFileWithTargetsRead,
@@ -27,6 +35,12 @@ __all__ = [
     "LogEntryCreate",
     "LogBatchCreate",
     "LogEntryRead",
+    "ManifestMediaItem",
+    "ManifestResponse",
+    "ManifestScheduleItem",
+    "ManifestSettingsItem",
+    "SyncConfirmRequest",
+    "SyncConfirmResponse",
     "MediaFileRead",
     "MediaTargetCreate",
     "MediaFileWithTargetsRead",
@@ -35,3 +49,4 @@ __all__ = [
     "ScheduleRead",
     "PrayerTimeRead",
 ]
+

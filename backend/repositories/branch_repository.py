@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -71,4 +71,23 @@ class BranchRepository(BaseRepository[Branch]):
             .values(is_online=False)
         )
         return result.rowcount
+
+    # --- Sync Engine ---
+
+    async def update_last_sync(
+        self, branch_id: int, sync_status: str = "ok"
+    ) -> bool:
+        """
+        Sync onayı sonrası last_sync_at ve sync_status güncelle.
+
+        Returns:
+            True eğer satır güncellendiyse, False branch bulunamazsa.
+        """
+        result = await self.session.execute(
+            update(Branch)
+            .where(Branch.id == branch_id)
+            .values(last_sync_at=func.now(), sync_status=sync_status)
+        )
+        return result.rowcount > 0
+
 

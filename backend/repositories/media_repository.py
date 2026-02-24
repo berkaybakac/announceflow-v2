@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.models.media import MediaFile, MediaTarget, MediaType, TargetType
@@ -22,6 +22,42 @@ class MediaRepository(BaseRepository[MediaFile]):
             select(MediaFile).where(MediaFile.file_hash == file_hash)
         )
         return result.scalar_one_or_none()
+
+    async def get_music_for_branch(
+        self,
+        branch_id: int,
+        group_tag: str | None,
+        limit: int | None = None,
+    ) -> Sequence[MediaFile]:
+        """
+        Branch'e ait tüm MÜZİK dosyalarını 3'lü ACL kuralıyla getir.
+
+        Çözümleme: ALL ∪ BRANCH(branch_id) ∪ GROUP(group_tag)
+        DISTINCT ile aynı dosyanın birden fazla kuraldan eşleşmesi önlenir.
+        """
+        conditions = [
+            MediaTarget.target_type == TargetType.ALL,
+            (MediaTarget.target_type == TargetType.BRANCH)
+            & (MediaTarget.target_id == branch_id),
+        ]
+        if group_tag:
+            conditions.append(
+                (MediaTarget.target_type == TargetType.GROUP)
+                & (MediaTarget.target_group == group_tag)
+            )
+
+        stmt = (
+            select(MediaFile)
+            .join(MediaTarget, MediaTarget.media_id == MediaFile.id)
+            .where(MediaFile.type == MediaType.MUSIC)
+            .where(or_(*conditions))
+            .distinct()
+        )
+        if limit is not None:
+            stmt = stmt.limit(limit)
+
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
 
 
 class MediaTargetRepository(BaseRepository[MediaTarget]):

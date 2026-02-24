@@ -1,6 +1,6 @@
-from datetime import time
+from datetime import datetime, time
 
-from sqlalchemy import Boolean, ForeignKey, Integer, String, Time
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Time
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.models.base import Base, IdMixin
@@ -18,6 +18,8 @@ class Branch(IdMixin, Base):
     is_online: Mapped[bool] = mapped_column(Boolean, default=False)
     volume_music: Mapped[int] = mapped_column(Integer, default=50)
     volume_announce: Mapped[int] = mapped_column(Integer, default=80)
+    last_sync_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    sync_status: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     # 1-to-1 relationship
     settings: Mapped["BranchSettings"] = relationship(

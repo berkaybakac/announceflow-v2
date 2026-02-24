@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     MEDIA_STORAGE_PATH: str = "./data/media"
     MEDIA_TEMP_PATH: str = "./data/media/temp"
     MAX_UPLOAD_SIZE_MB: int = 500
+    MANIFEST_MAX_FILES: int = Field(200, ge=1)
 
     # MQTT (Heartbeat Monitor)
     MQTT_BROKER_HOST: str = "localhost"
