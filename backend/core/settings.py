@@ -29,6 +29,17 @@ class Settings(BaseSettings):
     MEDIA_TEMP_PATH: str = "./data/media/temp"
     MAX_UPLOAD_SIZE_MB: int = 500
 
+    # MQTT (Heartbeat Monitor)
+    MQTT_BROKER_HOST: str = "localhost"
+    MQTT_BROKER_PORT: int = 1883
+    MQTT_TOPIC_STATUS: str = "announceflow/+/+/status"
+    MQTT_TOPIC_LWT: str = "announceflow/+/+/lwt"
+    MQTT_HEARTBEAT_TIMEOUT_SECONDS: int = 180  # 3 dakika
+    MQTT_REAPER_INTERVAL_SECONDS: int = 60  # 1 dakikada bir kontrol
+    MQTT_TELEMETRY_CACHE_MAX_BRANCHES: int = 5000
+    MQTT_TELEMETRY_OFFLINE_TTL_SECONDS: int = 86400
+    MQTT_TELEMETRY_MAX_STRING_LENGTH: int = 512
+
     # TTS (Coqui XTTS v2)
     COQUI_TOS_AGREED: bool = False
     TTS_MODEL_NAME: str = "tts_models/multilingual/multi-dataset/xtts_v2"

@@ -15,6 +15,7 @@ class Branch(IdMixin, Base):
     group_tag: Mapped[str | None] = mapped_column(String(100), nullable=True)
     token: Mapped[str] = mapped_column(String(500), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_online: Mapped[bool] = mapped_column(Boolean, default=False)
     volume_music: Mapped[int] = mapped_column(Integer, default=50)
     volume_announce: Mapped[int] = mapped_column(Integer, default=80)
 

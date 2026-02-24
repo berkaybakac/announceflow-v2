@@ -32,6 +32,19 @@ _model_lock = threading.Lock()
 _inference_lock = threading.Lock()
 
 
+def _ensure_numba_cache_dir() -> None:
+    """
+    Ensure numba has a writable cache directory before importing TTS/librosa.
+
+    Some environments fail at import time if NUMBA cache cannot be resolved.
+    """
+    if os.environ.get("NUMBA_CACHE_DIR"):
+        return
+    cache_dir = Path("/tmp/announceflow-numba-cache")
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    os.environ["NUMBA_CACHE_DIR"] = str(cache_dir)
+
+
 def _configure_torch_weights_policy_for_tts() -> None:
     """Force torch.load defaults compatible with Coqui checkpoints in this process."""
     os.environ.pop("TORCH_FORCE_WEIGHTS_ONLY_LOAD", None)
@@ -42,6 +55,7 @@ def _configure_torch_weights_policy_for_tts() -> None:
 def _load_model() -> "TTS":  # type: ignore[name-defined]
     """Load Coqui XTTS v2 model. Runs in thread pool, blocking is safe here."""
     _assert_tts_runtime_supported()
+    _ensure_numba_cache_dir()
     _configure_torch_weights_policy_for_tts()
     if settings.COQUI_TOS_AGREED:
         os.environ["COQUI_TOS_AGREED"] = "1"

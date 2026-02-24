@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -37,3 +37,38 @@ class BranchRepository(BaseRepository[Branch]):
             select(Branch).where(Branch.token == token)
         )
         return result.scalar_one_or_none()
+
+    # --- Heartbeat Monitor ---
+
+    async def set_online_status(self, branch_id: int, is_online: bool) -> bool:
+        """
+        Branch online durumunu güncelle.
+
+        Returns:
+            True eğer satır güncellendiyse, False branch bulunamazsa.
+        """
+        result = await self.session.execute(
+            update(Branch)
+            .where(Branch.id == branch_id)
+            .values(is_online=is_online)
+        )
+        return result.rowcount > 0
+
+    async def set_bulk_offline(self, branch_ids: list[int]) -> int:
+        """
+        Birden fazla branch'i toplu offline yap.
+        Reaper döngüsü tarafından çağrılır.
+
+        Returns:
+            Güncellenen satır sayısı.
+        """
+        if not branch_ids:
+            return 0
+        result = await self.session.execute(
+            update(Branch)
+            .where(Branch.id.in_(branch_ids))
+            .where(Branch.is_online.is_(True))
+            .values(is_online=False)
+        )
+        return result.rowcount
+
