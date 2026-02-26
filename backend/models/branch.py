@@ -13,7 +13,11 @@ class Branch(IdMixin, Base):
     city: Mapped[str] = mapped_column(String(100), nullable=False)
     district: Mapped[str] = mapped_column(String(100), nullable=False)
     group_tag: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    token: Mapped[str] = mapped_column(String(500), nullable=False)
+    token: Mapped[str] = mapped_column(
+        String(500),
+        unique=True,
+        nullable=False,
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, default=False)
     is_online: Mapped[bool] = mapped_column(Boolean, default=False)
     volume_music: Mapped[int] = mapped_column(Integer, default=50)

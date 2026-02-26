@@ -25,7 +25,7 @@
 
 ## Faz 4 (Entegrasyon & Dockerization) Öncesi Çözülecek Teknik Borçlar
 
-- [P0] Unique Constraint Eksiği (Backend): branches.token kolonu benzersiz (unique) değil. Provisioning çakışmalarını önlemek için DB şemasına unique constraint eklenecek.
+- [P0] ~~Unique Constraint Eksiği (Backend): branches.token kolonu benzersiz (unique) değil. Provisioning çakışmalarını önlemek için DB şemasına unique constraint eklenecek.~~ **DONE (2026-02-26):** `branches.token` için unique constraint eklendi (`uq_branches_token`, Alembic: `91cec57a7c2c`).
 - [P0] Download endpoint ACL zafiyeti (is_global/media_targets bazlı yetkilendirme): Device JWT ile medya indirme endpoint'i branch kapsamı doğrulaması yapmıyor. Şube bazlı erişim kısıtı ACL sözleşmesine göre zorunlu hale getirilecek.
 - [P1] Agent DB Volume Path (DevOps): Dockerization aşamasında agent.db kalıcılığını sağlamak için SQLite yolu relative (sqlite:///agent.db) halinden absolute bir volume path'ine (/data/agent.db) taşınacak ve settings.py buna göre güncellenecek.
 - [P2] Transaction Sınırı Dağınıklığı (Backend): get_db() auto-commit davranışı ile router seviyesindeki manuel commit karmaşası giderilecek. Rollback semantiği güvenli hale getirilecek.
