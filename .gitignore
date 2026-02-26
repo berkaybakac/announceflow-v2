@@ -56,7 +56,6 @@ agent/dist/
 # NOTE: *.spec files are deliberately tracked for build configuration
 
 # Documentation & Notes (User requested exclusion)
-docs/
 DEVICE_NOTES.md
 README.backup.md
 
@@ -71,4 +70,3 @@ backend/config/voice_profiles.local.json
 data/media/temp/*
 !data/media/temp/.gitkeep
 data/media/stakeholder_samples/
-BACKLOG.md
