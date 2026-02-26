@@ -8,10 +8,10 @@ from backend.models.base import Base, IdMixin
 
 
 class TTSJobStatus(str, enum.Enum):
-    PENDING = "pending"
-    PROCESSING = "processing"
-    DONE = "done"
-    FAILED = "failed"
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    DONE = "DONE"
+    FAILED = "FAILED"
 
 
 class TTSJob(IdMixin, Base):

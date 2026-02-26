@@ -40,7 +40,7 @@ class TestTTSEndpoints:
         assert resp.status_code == 202
         body = resp.json()
         assert "id" in body
-        assert body["status"] == "pending"
+        assert body["status"] == "PENDING"
         assert body["voice_profile"] == "default"
         assert body["media_id"] is None
 
@@ -107,7 +107,7 @@ class TestTTSEndpoints:
         assert resp.status_code == 200
         body = resp.json()
         assert body["id"] == job_id
-        assert body["status"] == "pending"
+        assert body["status"] == "PENDING"
         assert body["text_input"] == "Durum sorgulama testi"
 
     async def test_tts_job_not_found_returns_404(
