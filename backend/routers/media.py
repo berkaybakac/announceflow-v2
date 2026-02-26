@@ -12,11 +12,13 @@ from fastapi import (
     UploadFile,
     status,
 )
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.database import get_db
 from backend.core.settings import settings
-from backend.dependencies import get_current_user
+from backend.dependencies import get_current_device, get_current_user
+from backend.models.branch import Branch
 from backend.models.media import MediaFile, MediaType
 from backend.models.tts import TTSJob  # noqa: F811
 from backend.models.user import User
@@ -104,6 +106,34 @@ async def upload_media(
         file_name=media.file_name,
         status="processing",
         message="Dosya alındı, normalizasyon kuyruğunda.",
+    )
+
+
+@router.get("/{media_id}/download")
+async def download_media(
+    media_id: int,
+    db: AsyncSession = Depends(get_db),
+    _current_device: Branch = Depends(get_current_device),
+) -> FileResponse:
+    repo = MediaRepository(db)
+    media = await repo.get_by_id(media_id)
+    if media is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Medya bulunamadı.",
+        )
+
+    file_path = Path(media.file_path)
+    if not file_path.is_file():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Medya dosyası bulunamadı.",
+        )
+
+    return FileResponse(
+        path=file_path,
+        media_type="audio/mpeg",
+        filename=media.file_name,
     )
 
 

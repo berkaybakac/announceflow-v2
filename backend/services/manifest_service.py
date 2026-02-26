@@ -108,7 +108,7 @@ async def build_manifest(branch: Branch, db: AsyncSession) -> ManifestResponse:
             file_hash=mf.file_hash,
             type=mf.type.value,
             size_bytes=mf.size_bytes,
-            download_url=f"/api/v1/media/download/{mf.id}",
+            download_url=f"/api/v1/media/{mf.id}/download",
         )
         for mf in music_files
     ]
@@ -121,7 +121,7 @@ async def build_manifest(branch: Branch, db: AsyncSession) -> ManifestResponse:
             media_file_name=media.file_name,
             media_file_hash=media.file_hash,
             media_size_bytes=media.size_bytes,
-            media_download_url=f"/api/v1/media/download/{media.id}",
+            media_download_url=f"/api/v1/media/{media.id}/download",
             play_at=sched.play_at,
             cron_expression=sched.cron_expression,
             end_time=sched.end_time,

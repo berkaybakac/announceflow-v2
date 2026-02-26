@@ -375,11 +375,14 @@ class TestManifestRouter:
         assert len(body["music"]) == 1
         assert body["music"][0]["file_name"] == "api_track.mp3"
         assert body["music"][0]["file_hash"] == "api1"
-        assert body["music"][0]["download_url"] == f"/api/v1/media/download/{music.id}"
+        assert body["music"][0]["download_url"] == f"/api/v1/media/{music.id}/download"
 
         # Announcements
         assert len(body["announcements"]) == 1
         assert body["announcements"][0]["media_file_name"] == "api_anons.mp3"
+        assert body["announcements"][0]["media_download_url"] == (
+            f"/api/v1/media/{anons.id}/download"
+        )
 
         # Settings — strftime type safety
         assert body["settings"]["work_start"] == "09:00"
