@@ -25,6 +25,8 @@ config.json
 *.db
 *.sqlite
 *.db-journal
+*.db-wal
+*.db-shm
 
 # Logs
 *.log
@@ -68,4 +70,5 @@ test.db
 backend/config/voice_profiles.local.json
 data/media/temp/*
 !data/media/temp/.gitkeep
+data/media/stakeholder_samples/
 BACKLOG.md

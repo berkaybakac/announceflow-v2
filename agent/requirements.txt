@@ -6,3 +6,16 @@ pydantic-settings>=2.3.0
 
 # Logging (JSON structured — Anayasa kurali)
 python-json-logger>=2.0.7
+
+# Database (Async SQLite — WAL mode, SD kart koruması)
+aiosqlite>=0.20.0
+
+# Async File I/O (boot sequence token okuma vb.)
+aiofiles>=24.1.0
+
+# Scheduler (job persistence — reboot sonrasi kaybolmaz)
+APScheduler>=3.10.4
+
+# APScheduler JobStore backend (NullPool ile kullanilir)
+SQLAlchemy>=2.0.0
+
