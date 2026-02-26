@@ -638,7 +638,7 @@ Bu bölüm, sistemin çalışması için zorunlu olan ancak önceki versiyonlard
 | 1 | CPU Serial oku → Lisans dosyasıyla karşılaştır | Yazılım kendini kapatır (Hardware Lock). |
 | 2 | device_token.txt oku | Token yoksa hata logla, bekle. |
 | 3 | İnternet bağlantısı kontrol et | Offline moduna geç (Adım 6'dan devam et). |
-| 4 | Master'a HTTP POST /api/v1/agent/register (token ile) | 3 deneme, her biri 10sn bekle. Başarısız: Offline mod. |
+| 4 | Master'a HTTP POST /api/v1/agent/handshake (token ile) | 3 deneme, her biri 10sn bekle. Başarısız: Offline mod. |
 | 5 | Master'dan manifest.json çek, lokal ile diff al | Diff başarısız: Mevcut lokal dosyalarla devam et. |
 | 6 | Eksik/güncel MP3 dosyalarını indir (Arka planda) | İndirme başarısız: Lokal cache ile devam et, retry kuyruğu. |
 | 7 | 30 günlük Ezan vakitlerini kontrol et (SQLite) | Cache yoksa veya <7 gün kaldıysa Diyanet API'den çek. |
@@ -1860,5 +1860,4 @@ Aşağıdaki maddeler Faz 1-2-3 sürecinde geliştirmeyi engellemez. Dağıtım 
 | SQLite Migration | ✅ schema_version tablosu + gömülü idempotent SQL'ler |
 | APScheduler Persistence | ✅ SQLAlchemyJobStore → agent SQLite |
 | Cursor Başlangıç | ✅ 3 dosya stratejisi + 4 adımlı modül protokolü |
-
 

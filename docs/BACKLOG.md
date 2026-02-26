@@ -26,6 +26,7 @@
 ## Faz 4 (Entegrasyon & Dockerization) Öncesi Çözülecek Teknik Borçlar
 
 - [P0] Unique Constraint Eksiği (Backend): branches.token kolonu benzersiz (unique) değil. Provisioning çakışmalarını önlemek için DB şemasına unique constraint eklenecek.
+- [P0] Download endpoint ACL zafiyeti (is_global/media_targets bazlı yetkilendirme): Device JWT ile medya indirme endpoint'i branch kapsamı doğrulaması yapmıyor. Şube bazlı erişim kısıtı ACL sözleşmesine göre zorunlu hale getirilecek.
 - [P1] Agent DB Volume Path (DevOps): Dockerization aşamasında agent.db kalıcılığını sağlamak için SQLite yolu relative (sqlite:///agent.db) halinden absolute bir volume path'ine (/data/agent.db) taşınacak ve settings.py buna göre güncellenecek.
 - [P2] Transaction Sınırı Dağınıklığı (Backend): get_db() auto-commit davranışı ile router seviyesindeki manuel commit karmaşası giderilecek. Rollback semantiği güvenli hale getirilecek.
 - [Doc] ~~Blueprint Drift: Geliştirme sürecinde alınan mimari kararlar (BackgroundScheduler kullanımı, music ve announcements listelerinin ayrılması, hedeflenmiş yayın yerine global yayın seçilmesi) AnnounceFlow_V2_MasterBlueprint_FINAL.md dosyasına "As-Built" olarak yansıtılacak.~~ **DONE (2026-02-26):** Blueprint 3B.3 (manifest sözleşmesi), 3D.2 (TTS), 3D.4 (media_targets, dosya yolları) As-Built notlarıyla güncellendi. branches ek kolonları, media_files ek kolonları, tts_jobs ve logs tablo tanımları eklendi.

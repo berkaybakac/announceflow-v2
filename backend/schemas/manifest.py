@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -52,7 +53,7 @@ class SyncConfirmRequest(BaseModel):
     """Agent sync bitirdiğinde gönderir."""
 
     synced_files_count: int
-    status: str = "ok"  # "ok" | "partial"
+    status: Literal["ok", "partial"] = "ok"
 
 
 class SyncConfirmResponse(BaseModel):
