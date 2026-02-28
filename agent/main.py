@@ -78,7 +78,23 @@ async def _read_cpu_serial() -> str:
 # ---------------------------------------------------------------------------
 # Device Token — Zero-Touch Provisioning
 # ---------------------------------------------------------------------------
-async def _read_device_token() -> str:
+async def _wait_or_shutdown(
+    shutdown_event: asyncio.Event,
+    timeout_seconds: int,
+) -> bool:
+    """Timeout dolana kadar veya shutdown sinyali gelene kadar bekler.
+
+    Returns:
+        bool: True ise shutdown sinyali geldi, False ise timeout doldu.
+    """
+    try:
+        await asyncio.wait_for(shutdown_event.wait(), timeout=timeout_seconds)
+        return True
+    except asyncio.TimeoutError:
+        return False
+
+
+async def _read_device_token(shutdown_event: asyncio.Event) -> str | None:
     """Device token dosyasini okur.
 
     Dosya yoksa veya bossa:
@@ -90,7 +106,7 @@ async def _read_device_token() -> str:
     """
     token_path = agent_settings.TOKEN_PATH
 
-    while True:
+    while not shutdown_event.is_set():
         try:
             async with aiofiles.open(token_path, mode="r") as f:
                 token = (await f.read()).strip()
@@ -100,7 +116,8 @@ async def _read_device_token() -> str:
                     "Device token dosyasi bos",
                     extra={"path": token_path},
                 )
-                await asyncio.sleep(60)
+                if await _wait_or_shutdown(shutdown_event, 60):
+                    break
                 continue
 
             logger.info(
@@ -114,20 +131,25 @@ async def _read_device_token() -> str:
                 "Device token dosyasi bulunamadi — bekleniyor",
                 extra={"path": token_path},
             )
-            await asyncio.sleep(60)
+            if await _wait_or_shutdown(shutdown_event, 60):
+                break
 
         except OSError as exc:
             logger.error(
                 "Device token okunamadi — bekleniyor",
                 extra={"path": token_path, "error": str(exc)},
             )
-            await asyncio.sleep(60)
+            if await _wait_or_shutdown(shutdown_event, 60):
+                break
+
+    logger.info("Device token beklemesi shutdown nedeniyle sonlandirildi")
+    return None
 
 
 # ---------------------------------------------------------------------------
 # Boot Sequence
 # ---------------------------------------------------------------------------
-async def boot_sequence() -> None:
+async def boot_sequence(shutdown_event: asyncio.Event) -> bool:
     """Agent boot islemi — sirasıyla calisir.
 
     Adim 1: Logger kurulumu
@@ -144,7 +166,10 @@ async def boot_sequence() -> None:
     cpu_serial = await _read_cpu_serial()
 
     # --- Adim 3: Device Token (sonsuz bekleme olabilir) ---
-    device_token = await _read_device_token()
+    device_token = await _read_device_token(shutdown_event)
+    if device_token is None:
+        logger.info("Boot sequence shutdown nedeniyle yarida kesildi")
+        return False
 
     # --- Adim 4: Database (WAL + 4 tablo) ---
     await init_db()
@@ -160,6 +185,7 @@ async def boot_sequence() -> None:
             "db_path": agent_settings.DB_PATH,
         },
     )
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -180,20 +206,28 @@ def main() -> None:
     """Agent entrypoint. asyncio event loop'u baslatir."""
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
+    shutdown_event = asyncio.Event()
+
+    def _request_shutdown(sig: signal.Signals) -> None:
+        if shutdown_event.is_set():
+            return
+        logger.info("Shutdown sinyali alindi", extra={"signal": sig.name})
+        shutdown_event.set()
 
     # --- Graceful shutdown signal handler ---
     for sig in (signal.SIGINT, signal.SIGTERM):
         loop.add_signal_handler(
             sig,
-            lambda: loop.create_task(_shutdown()),
+            lambda sig=sig: _request_shutdown(sig),
         )
 
     try:
-        loop.run_until_complete(boot_sequence())
-        # Boot tamamlandi — event loop acik kalir (APScheduler + gelecek MQTT)
-        loop.run_forever()
+        boot_completed = loop.run_until_complete(boot_sequence(shutdown_event))
+        if boot_completed:
+            # Boot tamamlandi — event loop shutdown sinyalini bekler.
+            loop.run_until_complete(shutdown_event.wait())
     except KeyboardInterrupt:
-        pass
+        shutdown_event.set()
     finally:
         loop.run_until_complete(_shutdown())
         loop.close()
