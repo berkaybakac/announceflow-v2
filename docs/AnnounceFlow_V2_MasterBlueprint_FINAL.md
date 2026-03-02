@@ -481,7 +481,7 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 | target_type | Enum | ✓ | 'BRANCH', 'GROUP' veya 'ALL' |
 | target_id | Integer | — | Hedef ID. ALL için NULL |
 | play_at | Datetime | — | Tek seferlik tarih/saat |
-| cron_expression | String | — | Tekrar eden görev ('0 9 * * 1' = Her Pazartesi 09:00) |
+| cron_expression | String | — | Tekrar eden görev (`'0 9 * * 1'` = Her Pazartesi 09:00) |
 | end_time | Datetime | — | play_at + duration. Çakışma slot kilitleme için. |
 | is_active | Boolean | ✓ | Görev aktif mi? |
 
@@ -777,7 +777,7 @@ Tüm soruların cevaplanmasıyla kapanan son açık maddeler. Bu bölümden sonr
 
 - Tasarım Deseni: Facade Pattern. voice_engine, player.py ile ses motoru arasında köprü kurar. MVP'de LibVLC, Faz 2'de TTS — player.py hiç değişmez.
 
-- agent/voice_engine/__init__.py yapısı:
+- `agent/voice_engine/__init__.py` yapısı:
 
   - class VoiceEngine (abstract): play(path), pause(), resume(), stop(), set_volume(int)
 
@@ -984,7 +984,7 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 
 - Sen Infrastructure Plane'e girince: Yeni Raspberry Pi tanımlama, Device Token üretme, MQTT heartbeat verileri (disk %, CPU temp, bağlantı durumu), JSON Log Viewer, Yeşil/Sarı/Kırmızı durum ışıkları.
 
-- Ayrım nasıl sağlanır? URL prefix ile: /dashboard/* müşteri ekranları, /admin/* teknik ekranlar. Aynı JWT, aynı uygulama — sadece sayfalar ayrı.
+- Ayrım nasıl sağlanır? URL prefix ile: `/dashboard/*` müşteri ekranları, `/admin/*` teknik ekranlar. Aynı JWT, aynı uygulama — sadece sayfalar ayrı.
 
 - Over-engineering değil: Bu SSR (Jinja2) ile basitçe iki farklı template klasörü demek. Ekstra middleware veya rol sistemi gerektirmez.
 
@@ -1089,9 +1089,9 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 | V1'deki Senaryo | schedules Tablosunda Nasıl? |
 | --- | --- |
 | Tek seferlik (3 Mart 14:00'da bir kez) | play_at = '2025-03-03 14:00:00', cron_expression = NULL |
-| Her gün 09:00'da | play_at = NULL, cron_expression = '0 9 * * *' |
-| Her Pazartesi 09:00'da | play_at = NULL, cron_expression = '0 9 * * 1' |
-| Hafta içi her gün 08:30 | play_at = NULL, cron_expression = '30 8 * * 1-5' |
+| Her gün 09:00'da | play_at = NULL, cron_expression = `'0 9 * * *'` |
+| Her Pazartesi 09:00'da | play_at = NULL, cron_expression = `'0 9 * * 1'` |
+| Hafta içi her gün 08:30 | play_at = NULL, cron_expression = `'30 8 * * 1-5'` |
 | Mesai açılışında (work_start saatinde) | play_at = NULL, cron_expression otomatik üretilir: branch_settings.work_start okunarak |
 
 - Backend Kütüphanesi: APScheduler (BackgroundScheduler + SQLAlchemyJobStore). V1'deki zamanlama mantığı bu iskelete migrate edilir.
@@ -1611,7 +1611,7 @@ Aşağıdaki maddeler Faz 1-2-3 sürecinde geliştirmeyi engellemez. Dağıtım 
 | Dosya Depolama | file_path sütunu vardı ama fiziksel yol tanımsızdı | /data/media/{branch_id}/{file_id}.mp3 standardı tanımlandı (Bölüm 3B.4) |
 | AUDITOR_PROMPT Asyncio | Async tuzakları denetim listesinde yoktu | 8. madde eklendi: Agent'ta blocking I/O kontrolü |
 | Auth Mimarisi — KRİTİK | Yanlışlıkla 'super_admin + client_admin + clients tablosu' eklenmişti | TAMAMEN KALDIRILDI. HaaS modeli: Single Admin JWT, RBAC yok, lean backend. |
-| Dashboard Mimarisi | 'İki ayrı panel' düşünülmüştü | Tek panel, iki sayfa: /dashboard/* müşteri, /admin/* teknik. Aynı JWT, ayrı template. |
+| Dashboard Mimarisi | 'İki ayrı panel' düşünülmüştü | Tek panel, iki sayfa: `/dashboard/*` müşteri, `/admin/*` teknik. Aynı JWT, ayrı template. |
 | Uzaktan Müdahale — KRİTİK | Tailscale öncelikli yazılmıştı (ücretli) | DÜZELTILDI: Alpemix birincil (ücretsiz), Tailscale/ZeroTier ücretsiz tier not olarak eklendi. |
 | Audio Backend | Hiç belgelenmemişti | python-vlc (LibVLC) seçildi. Pi 3.5mm jack + Pause/Resume güvenilirliği |
 | Ezan API Detayı | Sadece 'Diyanet API' yazıyordu | Endpoint, retry, failover, SQLite tablo yapısı eklendi |

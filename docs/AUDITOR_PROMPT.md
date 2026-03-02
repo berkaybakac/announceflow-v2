@@ -78,7 +78,7 @@ Doğrusu: `asyncio.sleep()`, `aiofiles`, `httpx` kullanılmalıdır.
 
 ## ÇIKTI FORMATI
 
-```
+```text
 Kural 1 — Güvenlik: ✅ PASS
 Kural 2 — IoT & Performans: ❌ FAIL
   Dosya: agent/sync/__init__.py, Satır 34
@@ -92,13 +92,13 @@ AUDIT SONUCU: 7/8 PASS — BİRLEŞTİRME YAPMA. Önce hataları düzelt.
 
 Tüm kurallar geçerse:
 
-```
+```text
 AUDIT SONUCU: 8/8 PASS — Main Branch'e geçmeye hazır.
 ```
 
 Proje guard raporunu ayrıca ekle:
 
-```
+```text
 PROJECT GUARDS (HARD): 8/8 PASS
 PROJECT GUARDS (EVOLVABLE): 1/1 PASS
 ```

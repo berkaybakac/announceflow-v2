@@ -72,7 +72,7 @@
 
 ### users Tablosu
 
-```
+```text
 id, username, password_hash (Argon2), is_vendor_admin (Boolean), is_active (Boolean)
 JWT: {"sub": user_id, "is_vendor_admin": true/false, "exp": timestamp}
 ```
@@ -81,7 +81,7 @@ JWT: {"sub": user_id, "is_vendor_admin": true/false, "exp": timestamp}
 
 ## AGENT SQLite (agent.db) — TAM OLARAK 4 TABLO
 
-```
+```text
 config          → work_start, work_end, volume_music, volume_announce,
                   prayer_margin, loop_active, kill_active, schema_version
 local_media     → id, file_name, file_hash, type (MUSIC/ANONS), local_path
