@@ -917,7 +917,7 @@ Tüm soruların cevaplanmasıyla kapanan son açık maddeler. Bu bölümden sonr
 
 - JobStore: SQLAlchemyJobStore → Agent'ın SQLite dosyasına bağlanır.
 
-- Kod: AsyncIOScheduler(jobstores={'default': SQLAlchemyJobStore(url='sqlite:///agent.db')})
+- Kod: BackgroundScheduler(jobstores={'default': SQLAlchemyJobStore(url='sqlite:///agent.db')})
 
 - Sonuç: Cihaz kapanıp açılsa bile tüm zamanlanmış anonslar kaybolmaz.
 
@@ -1191,7 +1191,7 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 | Mesai açılışında (work_start saatinde) | play_at = NULL, cron_expression otomatik üretilir: branch_settings.work_start okunarak |
 
 
-- Backend Kütüphanesi: APScheduler (AsyncIOScheduler). V1'deki zamanlama mantığı bu kütüphaneye migrate edilir.
+- Backend Kütüphanesi: APScheduler (BackgroundScheduler + SQLAlchemyJobStore). V1'deki zamanlama mantığı bu iskelete migrate edilir.
 
 - Çakışma Kuralı: Aynı anda birden fazla anons tetiklenirse — önce schedule oluşturulma zamanı, sonra hedef kapsam (ALL > GROUP > BRANCH) sıralaması uygulanır.
 
@@ -1312,7 +1312,8 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
   * agent.db: aiosqlite, WAL Mode, idempotent init_db(), Alembic YASAK.
     - Tablolar: config (schema_version dahil), local_media, local_schedules, prayer_times
   * AgentLogger: JSON format, stdout, flood protection (aynı hata saniyede >10 kez ise durdur).
-  * APScheduler İskeleti: AsyncIOScheduler + SQLAlchemyJobStore (sadece başlatılır, job eklenmez).
+  * APScheduler İskeleti: BackgroundScheduler + SQLAlchemyJobStore (sadece başlatılır, job eklenmez).
+  * Mimari karar: aiosqlite thread-safety ve donanım I/O güvenliği için seçildi.
   * Boot Sequence (Adım 1-3): CPU Serial oku -> token oku -> DB init.
 
 [ 🔒 KİLİTLİ ] Adım 2: Sync Client & Handshake (Veri Boru Hattı)
@@ -1860,4 +1861,3 @@ Aşağıdaki maddeler Faz 1-2-3 sürecinde geliştirmeyi engellemez. Dağıtım 
 | SQLite Migration | ✅ schema_version tablosu + gömülü idempotent SQL'ler |
 | APScheduler Persistence | ✅ SQLAlchemyJobStore → agent SQLite |
 | Cursor Başlangıç | ✅ 3 dosya stratejisi + 4 adımlı modül protokolü |
-

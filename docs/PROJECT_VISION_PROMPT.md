@@ -46,7 +46,7 @@
 
 ---
 
-## VERİTABANI — Master PostgreSQL (7 Tablo — Fazlası Yok):
+## VERİTABANI — Master PostgreSQL (7 çekirdek tablo + tts_jobs ve logs genişleme tabloları):
 | Tablo | Amacı |
 |---|---|
 | users | Auth. is_vendor_admin flag ile geliştirici/müşteri ayrımı |
@@ -56,6 +56,8 @@
 | media_targets | **MÜZİK ACL katmanı** — hangi müzik hangi şubede? |
 | schedules | **ANONS Event Trigger katmanı** — ne zaman hangi anons? |
 | prayer_times | Diyanet API 30 günlük cache |
+| tts_jobs | TTS üretim kuyruğu ve durum takibi (genişleme tablosu) |
+| logs | Ajanlardan ingest edilen operasyonel log kayıtları (genişleme tablosu) |
 
 **KRİTİK AYRИМ — ASLA KARIŞTIRMA:**
 - `media_targets` = "Gaziantep şubesinde hangi müzikler çalar?" → ACL/Sync katmanı

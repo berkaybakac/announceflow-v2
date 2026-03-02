@@ -1,11 +1,13 @@
 # Hard Gate v3 Plan (DB Healthcheck + CUDA Fix + Warm-up + Race-Safe Cleanup)
 
+Bu plan Faz 4 Dockerization tamamlandıktan sonra aktif edilecektir.
+
 SİLİNECEK NOT:
 NİHAİ KARAR: Hard Gate Planı çöpe gitmiyor. Onu Faz 4'ün (Deployment & Dağıtım) ilk adımı olarak, yani Agent'ı da bitirip donanımları konuşturacağımız uçtan uca (End-to-End) entegrasyon testlerinin başına taşıyoruz. Şu an vakit kaybetmeden doğrudan Raspberry Pi'nin kalbine (Agent Faz 3) iniyoruz.
 
 
 ## Özet
-Bu plan, **Adım 3 (TTS Service)** tamamlandıktan sonra Voice Engine Abstraction'a geçmeden önce uygulanacak fiziksel doğrulama kapısıdır.
+Bu plan, **Faz 4 (Dockerization & Deployment) başlangıcında**, uçtan uca entegrasyon testlerinden hemen önce uygulanacak fiziksel doğrulama kapısıdır.
 
 Ana hedef: TTS/Media katmanında pytest'in tek başına yakalayamayacağı 4 kritik riski gerçek çalışma ortamında doğrulamak.
 
