@@ -4,7 +4,8 @@
 
 - `python3.11 -m venv .venv`
 - `source .venv/bin/activate`
-- `python -m pip install -r backend/requirements.txt`
+- `./.venv/bin/python -m pip install -r backend/requirements.txt`
+- `./.venv/bin/python -m pip install -r agent/requirements.txt`
 - `cp .env.example .env` and fill required values
 - `docker compose -f docker-compose.dev.yml up -d db`
 - `./.venv/bin/alembic -c backend/alembic.ini upgrade head`
