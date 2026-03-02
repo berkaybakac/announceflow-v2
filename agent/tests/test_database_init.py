@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import sqlite3
 import tempfile
 
 import pytest
@@ -191,6 +192,34 @@ class TestTableSchema:
             await db.execute(
                 "INSERT INTO local_media (id, file_name, file_hash, type, local_path) "
                 "VALUES (101, 'test2.mp3', 'def456', 'INVALID', '/data/test2.mp3')"
+            )
+            await db.commit()
+
+
+class TestForeignKeyEnforcement:
+    """SQLite foreign key enforcement acik olmali."""
+
+    @pytest.mark.asyncio
+    async def test_foreign_keys_pragma_active(self) -> None:
+        """PRAGMA foreign_keys = 1 donmeli."""
+        await database.init_db()
+
+        db = await database.get_db()
+        cursor = await db.execute("PRAGMA foreign_keys")
+        row = await cursor.fetchone()
+        assert row is not None
+        assert row[0] == 1, "SQLite foreign key enforcement acik olmali"
+
+    @pytest.mark.asyncio
+    async def test_local_schedule_requires_existing_media(self) -> None:
+        """local_schedules.media_id mevcut olmayan local_media.id'ye baglanamamali."""
+        await database.init_db()
+
+        db = await database.get_db()
+        with pytest.raises(sqlite3.IntegrityError):
+            await db.execute(
+                "INSERT INTO local_schedules (id, media_id, cron_expression, play_at, end_time) "
+                "VALUES (500, 999999, NULL, NULL, NULL)"
             )
             await db.commit()
 

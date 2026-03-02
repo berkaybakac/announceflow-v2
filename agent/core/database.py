@@ -99,6 +99,7 @@ async def get_db() -> aiosqlite.Connection:
             # --- PRAGMA ayarlari (WAL + busy_timeout) ---
             await db.execute("PRAGMA journal_mode=WAL")
             await db.execute("PRAGMA busy_timeout=5000")
+            await db.execute("PRAGMA foreign_keys=ON")
         except Exception:
             await db.close()
             raise
