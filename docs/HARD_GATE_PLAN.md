@@ -5,13 +5,14 @@ Bu plan Faz 4 Dockerization tamamlandıktan sonra aktif edilecektir.
 SİLİNECEK NOT:
 NİHAİ KARAR: Hard Gate Planı çöpe gitmiyor. Onu Faz 4'ün (Deployment & Dağıtım) ilk adımı olarak, yani Agent'ı da bitirip donanımları konuşturacağımız uçtan uca (End-to-End) entegrasyon testlerinin başına taşıyoruz. Şu an vakit kaybetmeden doğrudan Raspberry Pi'nin kalbine (Agent Faz 3) iniyoruz.
 
-
 ## Özet
+
 Bu plan, **Faz 4 (Dockerization & Deployment) başlangıcında**, uçtan uca entegrasyon testlerinden hemen önce uygulanacak fiziksel doğrulama kapısıdır.
 
 Ana hedef: TTS/Media katmanında pytest'in tek başına yakalayamayacağı 4 kritik riski gerçek çalışma ortamında doğrulamak.
 
 ## Kritik Mimari Kararlar
+
 1. `depends_on` tek başına yeterli kabul edilmez; `db` için healthcheck + `service_healthy` zorunlu.
 2. Mac/Docker ortamında XTTS için backend container'da `CUDA_VISIBLE_DEVICES=""` zorunlu.
 3. Cold start false negative'i önlemek için Gate-1 öncesi warm-up zorunlu.
@@ -19,12 +20,14 @@ Ana hedef: TTS/Media katmanında pytest'in tek başına yakalayamayacağı 4 kri
 5. Geçici script yaklaşımı kullanılacak: tek `temp_gate_check.sh`, koşum sonunda self-delete.
 
 ## Kapsam
+
 - TTS async tıkanma riski
 - Docker binary/parity riski (ffmpeg/ffprobe/libsndfile)
 - Disk/volume yazma izni riski
 - DB kalıcılık riski (restart/down-up sonrası)
 
 ## Değişecek Dosyalar
+
 1. `Dockerfile.backend` (yeni)
 2. `docker-compose.dev.yml` (güncelleme)
 3. `temp_gate_check.sh` (geçici; koşum sonunda kendini siler)
@@ -34,6 +37,7 @@ Ana hedef: TTS/Media katmanında pytest'in tek başına yakalayamayacağı 4 kri
 ## 1) Dockerfile.backend
 
 ### Hedef
+
 - Base image: `python:3.11-slim`
 - Sistem paketleri:
   - `ffmpeg`
@@ -55,6 +59,7 @@ Ana hedef: TTS/Media katmanında pytest'in tek başına yakalayamayacağı 4 kri
 ## 2) docker-compose.dev.yml
 
 ### db servisi
+
 - `healthcheck` eklenecek:
   - `pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-announceflow}`
   - `interval: 5s`
@@ -63,6 +68,7 @@ Ana hedef: TTS/Media katmanında pytest'in tek başına yakalayamayacağı 4 kri
   - `start_period: 5s`
 
 ### backend servisi
+
 - `build`:
   - `context: .`
   - `dockerfile: Dockerfile.backend`
@@ -89,6 +95,7 @@ Ana hedef: TTS/Media katmanında pytest'in tek başına yakalayamayacağı 4 kri
   - `curl -fsS http://localhost:8000/docs >/dev/null || exit 1`
 
 ### volumes
+
 - Mevcut: `postgres_data`
 - Yeni: `tts_cache`
 
@@ -97,10 +104,12 @@ Ana hedef: TTS/Media katmanında pytest'in tek başına yakalayamayacağı 4 kri
 ## 3) Geçici Script: temp_gate_check.sh
 
 ### Script Kuralları
+
 - `set -euo pipefail`
 - `trap 'cleanup_db; rm -f "$0"' EXIT INT TERM`
 
 ### cleanup_db (zorunlu sıra)
+
 1. İlk adım:
    - `docker compose -f docker-compose.dev.yml up -d db backend`
 2. DB readiness bekleme:
@@ -111,49 +120,61 @@ Ana hedef: TTS/Media katmanında pytest'in tek başına yakalayamayacağı 4 kri
 4. Hata olsa da script dosyası silinecek.
 
 ### Koşum Akışı
+
 1. `docker compose up -d --build db mqtt backend`
 2. Readiness bekleme (`db health`, `backend /docs`)
 3. Seed user oluşturma (`gate_user`, idempotent)
 4. Login token alma
 
 #### Warm-up (zorunlu)
-5. Kısa TTS job gönder (`voice_profile=premium_market_tr`)
-6. Job status poll (`/api/v1/media/tts/{id}`) -> `done`
-7. Warm-up tamamlanmadan Gate-1 başlamaz
+
+1. Kısa TTS job gönder (`voice_profile=premium_market_tr`)
+2. Job status poll (`/api/v1/media/tts/{id}`) -> `done`
+3. Warm-up tamamlanmadan Gate-1 başlamaz
 
 #### Gate-1 Async tıkanma
-8. Uzun TTS job başlat
-9. Aynı anda 30 login isteği
+
+1. Uzun TTS job başlat
+2. Aynı anda 30 login isteği
+
 - PASS:
   - timeout = 0
   - p95 < 1.5s
 
 #### Gate-2 Docker binary
-10. backend container içinde:
+
+1. backend container içinde:
+
 - `ffmpeg -version`
 - `ffprobe -version`
 - `python -c "import soundfile"`
 - PASS: hepsi başarılı
 
 #### Gate-3 Volume permission
-11. Script içinde 5–10MB valid wav üret
-12. `/api/v1/media/upload` ile gönder
-13. DB'de media satırında hash/path güncellemesini doğrula
+
+1. Script içinde 5–10MB valid wav üret
+2. `/api/v1/media/upload` ile gönder
+3. DB'de media satırında hash/path güncellemesini doğrula
+
 - PASS:
   - Permission denied / 500 yok
   - işleme tamamlanıyor
 
 #### Gate-4 DB persistence
-14. marker `tts_job_id` oluştur
-15. `docker compose down`
-16. `docker compose up -d db mqtt backend`
-17. Readiness bekleme
-18. `GET /api/v1/media/tts/{marker}` doğrulama
+
+1. marker `tts_job_id` oluştur
+2. `docker compose down`
+3. `docker compose up -d db mqtt backend`
+4. Readiness bekleme
+5. `GET /api/v1/media/tts/{marker}` doğrulama
+
 - PASS:
   - kayıt korunmuş
 
 ### Rapor Çıktısı
+
 Terminalde tek tablo:
+
 - `WARMUP`
 - `GATE1`
 - `GATE2`
@@ -163,12 +184,14 @@ Terminalde tek tablo:
 - `OVERALL`
 
 Exit code:
+
 - `0` -> tümü PASS
 - `1` -> herhangi FAIL
 
 ---
 
 ## Kabul Kriterleri
+
 1. Docker stack sağlıklı kalkar; backend migration sonrası çalışır.
 2. Warm-up başarılı ve Gate-1 false negative üretmez.
 3. 4 gate PASS.
@@ -176,13 +199,16 @@ Exit code:
 5. `temp_gate_check.sh` test sonunda yok (self-delete).
 
 ## Varsayımlar
+
 1. Docker Compose v2 (`service_healthy` destekli).
 2. İlk XTTS indirmesi için internet erişimi mevcut.
 3. Bu faz API sözleşmesini değiştirmez; infra doğrulama fazıdır.
 
 ## Genişletme Notu
+
 Bu plan şu an sadece TTS gate'lerini içeriyor.
 Adım 3 tamamlanınca şu gate'ler eklenecek:
+
 - Gate-5: MQTT Heartbeat bağlantısı
 - Gate-6: Sync Engine dosya senkronizasyonu
 - Gate-7: Scheduler job tetiklemesi

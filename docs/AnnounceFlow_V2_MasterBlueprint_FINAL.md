@@ -4,26 +4,19 @@
 
 MASTER BLUEPRINT — SOURCE OF TRUTH (FINAL)
 
-
 > **Kimlik:** Hub & Spoke, Offline-First, Token Korumalı IoT Ses Sistemi
-
 
 > **Mimari:** Modüler Monolit | Monorepo (Tek Klasör, Tek Repo)
 
-
 > **Öncelik Sırası:** Ezan / Mesai Dışı (Sessiz) > Anons (Müzik Durur) > Fon Müziği
-
 
 > **Marka:** Statek Sound — Tüm arayüzler bu kimlik altında çalışır
 
-
 > **Versiyon:** FINAL (v6.0 → v12.21 tüm güncellemeleri birleştirildi, çakışmalar çözüldü)
-
 
 # BÖLÜM 1 — TEKNİK ANAYASA (PROTOKOLLER)
 
 Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik bu protokollerin dışına çıkamaz.
-
 
 ## 1. Clean Slate Migration (Temiz Sayfa)
 
@@ -31,21 +24,19 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - Yalnızca V1 mantığına bakılır; backend ve agent klasörlerine sıfırdan yeniden yazılır.
 
-
 ## 2. Consultative Development (Danışmalı Geliştirme)
 
 - Yeni bir modüle başlamadan önce kod yazmadan önce 'En iyi kütüphane / yaklaşım nedir?' analizi yapılır.
 
 - Sprint Operasyon Standardı (Multi-Agent Workflow):
 
-    - Danışma: Mimari onay ve Best Practice soruları 'Hoca-Lider'den alınır.
+  - Danışma: Mimari onay ve Best Practice soruları 'Hoca-Lider'den alınır.
 
-    - Üretim: Kod, PROJECT_VISION_PROMPT.md ile beslenmiş 'İşçi LLM' tarafından izole ortamda yazılır.
+  - Üretim: Kod, PROJECT_VISION_PROMPT.md ile beslenmiş 'İşçi LLM' tarafından izole ortamda yazılır.
 
-    - Denetim: Yazılan kod, AUDITOR_PROMPT.md kriterlerine göre denetlenmeden ana projeye alınmaz.
+  - Denetim: Yazılan kod, AUDITOR_PROMPT.md kriterlerine göre denetlenmeden ana projeye alınmaz.
 
-    - Montaj: Denetimden geçen kod manuel olarak projeye eklenir ve commit edilir.
-
+  - Montaj: Denetimden geçen kod manuel olarak projeye eklenir ve commit edilir.
 
 ## 3. Testing Strategy (Test Stratejisi)
 
@@ -55,16 +46,15 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - Kapsam — Zorunlu Test Gerektiren Modüller:
 
-    - Auth (JWT & Handshake)
+  - Auth (JWT & Handshake)
 
-    - Priority Manager (Ezan/Anons/Müzik State Machine)
+  - Priority Manager (Ezan/Anons/Müzik State Machine)
 
-    - Sync Engine (Manifest Hash Karşılaştırma)
+  - Sync Engine (Manifest Hash Karşılaştırma)
 
 - Yasak: Basit CRUD işlemleri için test yazmak — over-engineering olarak kabul edilir.
 
 - Kural: Testten geçmeyen kod Main Branch'e alınmaz.
-
 
 ## 4. Design Patterns
 
@@ -75,7 +65,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 - Modüler Monolit: Sistem bu mimariyle tasarlanır.
 
 - Mikroservis Mimarisi: YASAKTIR. Solo Dev yönetim zorluğu nedeniyle kesinlikle uygulanmaz.
-
 
 ## 5. Logging Strategy (Loglama Stratejisi)
 
@@ -93,23 +82,21 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - Log Rotation (Cihaz / Agent):
 
-    - Docker Driver: json-file, max-size=10m, max-file=3 → Toplam 30MB tavan.
+  - Docker Driver: json-file, max-size=10m, max-file=3 → Toplam 30MB tavan.
 
 - Log Rotation (Merkez / Master):
 
-    - Docker seviyesinde sabit limit uygulanmaz; tüm geçmiş saklanır.
+  - Docker seviyesinde sabit limit uygulanmaz; tüm geçmiş saklanır.
 
-    - Disk dolmadan önce uyarı için heartbeat payload içinde disk_usage izlenir.
+  - Disk dolmadan önce uyarı için heartbeat payload içinde disk_usage izlenir.
 
 > ⚠ ÇÖZÜLEN ÇAKIŞMA: v12.20 'master disk dolana kadar sakla' ile v12.21 'tüm servisler 10m/3file' çakışıyordu. Çözüm: Agent=30MB sabit tavan, Master=disk izleme ile esnek saklama.
-
 
 ## 6. Code Review Protocol (Self-Correction)
 
 - Her özellik tamamlandığında, Main Branch'e geçmeden önce AUDITOR_PROMPT.md ile güvenlik ve mantık hatası taraması yapılır.
 
 - Hiçbir modül denetimden geçmeden ana koda dahil edilemez.
-
 
 ## 7. OTA Deployment Protocol (Temassız Dağıtım)
 
@@ -119,7 +106,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - İşleyiş: Merkez 'Push' yapar → Watchtower yeni imajı algılar → Eski container durdurulur → Yeni imaj çekilip başlatılır (Sıfır Manuel Müdahale).
 
-
 ## 8. Architectural Integrity (Mimari Bütünlük)
 
 - Kural: Modüler Monolit mimarisi.
@@ -127,7 +113,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 - Yasak: Mikroservis Mimarisi (Solo Dev yönetim zorluğu).
 
 - Monorepo Klasör Yapısı: /backend (Merkez), /agent (Şube), /shared (Ortak Modeller).
-
 
 ## 9. Development Standards (Geliştirme Standartları)
 
@@ -137,38 +122,35 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - SOLID prensipleri zorunludur. Repository Pattern (Veri/İş Mantığı ayrımı) şarttır.
 
-
 ## 10. Intellectual Property & Security (Fikri Mülkiyet — 3 Katmanlı Savunma)
 
 - Katman 1 — Kod Gizleme (Compilation & Obfuscation):
 
-    - Teknoloji: Nuitka (veya Cython).
+  - Teknoloji: Nuitka (veya Cython).
 
-    - Python kaynak kodları (.py), sahaya gitmeden önce C++ üzerinden makine diline (.bin/.so) derlenir.
+  - Python kaynak kodları (.py), sahaya gitmeden önce C++ üzerinden makine diline (.bin/.so) derlenir.
 
-    - SD kartta okunabilir kod bulunmaz; sadece binary dosyalar yer alır.
+  - SD kartta okunabilir kod bulunmaz; sadece binary dosyalar yer alır.
 
-    - Zamanlama: Kodlar tamamlandığında, SD karta yüklemeden hemen önce (Faz 4).
+  - Zamanlama: Kodlar tamamlandığında, SD karta yüklemeden hemen önce (Faz 4).
 
 - Katman 2 — Donanım Kilidi (Hardware Binding — Offline):
 
-    - Derlenmiş yazılım açılışta Raspberry Pi'nin CPU Serial numarasını okur.
+  - Derlenmiş yazılım açılışta Raspberry Pi'nin CPU Serial numarasını okur.
 
-    - Merkezden gelen şifreli 'Lisans Dosyası'ndaki seri numara eşleşmezse yazılım kendini kapatır.
+  - Merkezden gelen şifreli 'Lisans Dosyası'ndaki seri numara eşleşmezse yazılım kendini kapatır.
 
-    - Bu kontrol internet gerektirmez (SD kart kopyalanmaya karşı tam koruma).
+  - Bu kontrol internet gerektirmez (SD kart kopyalanmaya karşı tam koruma).
 
 - Katman 3 — Sunucu Yetkilendirmesi (Token Auth — Online):
 
-    - JWT & Device Whitelist. Kill Switch: Sunucu, yetkisiz cihaza dosya göndermez (403 Forbidden) ve kara listeye alır.
+  - JWT & Device Whitelist. Kill Switch: Sunucu, yetkisiz cihaza dosya göndermez (403 Forbidden) ve kara listeye alır.
 
-    - Ağ Güvenliği: Şubeler GitHub kaynak koduna erişemez; yalnızca derlenmiş Docker imajına (Registry) erişir.
+  - Ağ Güvenliği: Şubeler GitHub kaynak koduna erişemez; yalnızca derlenmiş Docker imajına (Registry) erişir.
 
 - Donanım Kilidi esastır. PyArmor (maliyetli yazılım koruması) tercih edilmez.
 
-
 # BÖLÜM 2 — UYGULAMA DETAYLARI (IMPLEMENTATION SPECS — FINAL)
-
 
 ## 1. Topoloji & Bağlantı (Connectivity — Zero-Touch)
 
@@ -184,7 +166,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - Protokol: MQTT (Komut/Kontrol) + HTTP/HTTPS (Veri/Dosya).
 
-
 ## 2. İletişim Protokolleri (Hybrid Protocol)
 
 - Control Plane: MQTT (Port 1883/8883). Anlık emirler, LWT (Last Will & Testament), Heartbeat.
@@ -192,7 +173,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 - Data Plane: HTTP/HTTPS (Port 80/443). Büyük dosya transferi ve Log upload.
 
 - Sync Yöntemi: Manifest Sync. Merkez manifest.json sunar. Şube farkı (Diff) bulup yalnızca gerekeni çeker.
-
 
 ## 3. Sunucu Güvenliği (Server Hardening & Anti-Lockout)
 
@@ -202,7 +182,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - Sigorta (Anti-Lockout): Admin IP'si ve Tailscale VPN IP bloğu Fail2Ban ignoreip (Whitelist) listesine eklenir. Admin asla banlanamaz.
 
-
 ## 4. Uzaktan Müdahale (Remote Access Strategy) — DOĞRU VERSİYON
 
 > ✓ KURAL: Birincil: Alpemix. SSH (Port 22) her zaman açık — backbone. Tailscale/ZeroTier: Ücretsiz VPN alternatifleri olarak opsiyonel not.
@@ -211,17 +190,17 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - Katman 1 — SSH (Her Zaman Açık, Backbone):
 
-    - Port 22 her zaman açık. Bu sistemin 'arka kapısı'. Alpemix kilitlense bile terminal erişimi garantidir.
+  - Port 22 her zaman açık. Bu sistemin 'arka kapısı'. Alpemix kilitlense bile terminal erişimi garantidir.
 
-    - Fail2Ban whitelist'e kendi sabit IP'n eklenir. Admin asla banlanamaz.
+  - Fail2Ban whitelist'e kendi sabit IP'n eklenir. Admin asla banlanamaz.
 
 - Katman 2 — Alpemix (Birincil Uzaktan Müdahale Aracı):
 
-    - Müşteri ekranını görebilir, terminal açabilirsin. Sorun tespiti için görsel müdahale imkânı.
+  - Müşteri ekranını görebilir, terminal açabilirsin. Sorun tespiti için görsel müdahale imkânı.
 
-    - Müşteri alışkanlığıyla uyumlu. Kurulumda standart olarak yüklenir.
+  - Müşteri alışkanlığıyla uyumlu. Kurulumda standart olarak yüklenir.
 
-    - RAM Takibi: Heartbeat payload'daki ram_usage verisiyle Alpemix'in 1GB üzerindeki etkisi izlenir.
+  - RAM Takibi: Heartbeat payload'daki ram_usage verisiyle Alpemix'in 1GB üzerindeki etkisi izlenir.
 
 - Katman 3 — Ücretsiz VPN Alternatifleri (Opsiyonel Not):
 
@@ -233,9 +212,7 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 | ZeroTier | 25 cihaz (Free Tier) | Tailscale alternatifi. Kurulumu biraz daha karmaşık ama tamamen ücretsiz. |
 | WireGuard | Tamamen ücretsiz (self-hosted) | En güçlü ama kurulumu manuel. Sadece çok sıkışırsan düşün. |
 
-
 - Öneri: Alpemix çalışıyor. Tailscale/ZeroTier'ı şimdi kurma, ihtiyaç olursa 30 dakikada eklenir.
-
 
 ## 5. Gözlemleme ve Uyarı (Fleet Monitoring & Telemetry)
 
@@ -261,14 +238,13 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - Dashboard Durum Mantığı:
 
-    - 🟢 Yeşil: Her şey yolunda.
+  - 🟢 Yeşil: Her şey yolunda.
 
-    - 🟡 Sarı: disk_usage > %90 veya cpu_temp > 80°C.
+  - 🟡 Sarı: disk_usage > %90 veya cpu_temp > 80°C.
 
-    - 🔴 Kırmızı: LWT tetiklendi veya 3 art arda Heartbeat alınamadı.
+  - 🔴 Kırmızı: LWT tetiklendi veya 3 art arda Heartbeat alınamadı.
 
 - Alerting: Kırmızı ve Sarı durumlarda Admin'e Telegram bildirimi gider.
-
 
 ## 6. TTS & Ses Üretim Stratejisi (Master-Side Synthesis)
 
@@ -286,7 +262,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - B Planı: Performans yetmezse VITS modeline geçilir.
 
-
 ## 7. Voice Engine Soyutlama Katmanı (Architecture)
 
 > ✓ KURAL: Ses işleme mantığı 'voice_engine' adlı bir abstraction layer üzerinden yürütülür.
@@ -294,7 +269,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 - Esneklik: MP3 dosyası mı, yoksa TTS motoru mu kullanılacağı tek bir konfigürasyon değişikliğiyle yönetilebilir.
 
 - Gelecek Koruması: Bu yapı sistemi v3, v4 için teknolojik değişimlere karşı hazır tutar.
-
 
 ## 8. Ses Motoru ve Öncelik (Audio Engine)
 
@@ -304,20 +278,19 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - Kanal Yönetimi (Discrete Volume):
 
-    - volume_music: Fon müziği ses seviyesi (%0–100), bağımsız yönetilir.
+  - volume_music: Fon müziği ses seviyesi (%0–100), bağımsız yönetilir.
 
-    - volume_announce: Anons ses seviyesi (%0–100), bağımsız yönetilir.
+  - volume_announce: Anons ses seviyesi (%0–100), bağımsız yönetilir.
 
-    - Dashboard'da iki ayrı slider bulunur.
+  - Dashboard'da iki ayrı slider bulunur.
 
 - Persistent Loop State (Kalıcı Loop Modu):
 
-    - 'Loop' butonu basıldığında durum kalıcı hafızaya (SQLite/Disk) yazılır.
+  - 'Loop' butonu basıldığında durum kalıcı hafızaya (SQLite/Disk) yazılır.
 
-    - Ezan, Anons veya Mesai Dışı kesintileri Loop modunu BOZMAZ.
+  - Ezan, Anons veya Mesai Dışı kesintileri Loop modunu BOZMAZ.
 
-    - Kesinti bittiğinde sistem 'loop_active' bayrağını kontrol edip döngüyü otomatik başlatır.
-
+  - Kesinti bittiğinde sistem 'loop_active' bayrağını kontrol edip döngüyü otomatik başlatır.
 
 ## 9. Konfigürasyon Orkestrasyonu (Tag-Based Management)
 
@@ -325,16 +298,15 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - Hiyerarşi (öncelik sırasıyla):
 
-    - Local (Şube Bazlı): Örn. 'Mağaza Kapanıyor'
+  - Local (Şube Bazlı): Örn. 'Mağaza Kapanıyor'
 
-    - Regional (İl/İlçe Bazlı): Örn. 'İstanbul Kampanyası'
+  - Regional (İl/İlçe Bazlı): Örn. 'İstanbul Kampanyası'
 
-    - Global (Tüm Şubeler): Örn. 'Marka Jingle'
+  - Global (Tüm Şubeler): Örn. 'Marka Jingle'
 
 - İlke: Idempotency — Merkezden gelen aynı komut tekrar tekrar işlense bile sistem durumunu bozmaz.
 
 - Şube İsimlendirme: Şehir-İlçe-Tip-Ad formatı (Hiyerarşik String). Hem SQL sorgularında hem MQTT topic'te (Örn: announceflow/Gaziantep/Mini/#) anında filtreleme sağlar.
-
 
 ## 10. Dağıtım Modeli (CI/CD & OTA — Hybrid-Cloud Deployment)
 
@@ -348,7 +320,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - Trafik Yönetimi (Jitter): 100 şube aynı anda güncelleme çekmez. '03:00–04:00 arası rastgele zaman' kuralı uygulanır (Thundering Herd engelleme).
 
-
 ## 11. Veri Güvenliği ve SD Kart Koruma
 
 - Yöntem: SQLite WAL Mode (Write-Ahead Logging).
@@ -357,26 +328,23 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - Docker Log Rotation: Agent için max-size=10m, max-file=3 (30MB tavan).
 
-
 ## 12. Performans & Yük Yönetimi
 
 - Memory Safety — RAM Koruması:
 
-    - Dosya yüklemede Streaming (Chunked Upload) ZORUNLUDUR.
+  - Dosya yüklemede Streaming (Chunked Upload) ZORUNLUDUR.
 
-    - FastAPI spool_max_size ayarıyla büyük dosyalar RAM'e değil diske tamponlanır.
+  - FastAPI spool_max_size ayarıyla büyük dosyalar RAM'e değil diske tamponlanır.
 
 - Concurrency: asyncio (Non-blocking I/O) ile tek çekirdekte binlerce istek karşılanır.
 
 - Veri Gösterimi: Arayüzde Pagination (Sayfalama) ZORUNLUDUR.
-
 
 ## 13. Kendi Kendini Onarma (Self-Healing)
 
 - Yazılım: Docker restart: unless-stopped.
 
 - Donanım: Linux Hardware Watchdog. İşletim sistemi kilitlenirse cihaz otomatik resetlenir.
-
 
 ## 14. Frontend & Dashboard Stratejisi
 
@@ -386,22 +354,21 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - Görünüm Modları:
 
-    - Grid View (Kartlar): Şubeler kart olarak listelenir; Yeşil/Kırmızı durum ışığı, çalan şarkı ve ses seviyesi görünür.
+  - Grid View (Kartlar): Şubeler kart olarak listelenir; Yeşil/Kırmızı durum ışığı, çalan şarkı ve ses seviyesi görünür.
 
-    - Data Table (Liste): Toplu yönetim ve filtreleme (Örn: 'Sadece Offline Olanları Göster') için detaylı liste.
+  - Data Table (Liste): Toplu yönetim ve filtreleme (Örn: 'Sadece Offline Olanları Göster') için detaylı liste.
 
-    - Map View (Harita): FAZ 2 HEDEFİ. MVP'de yer almaz. (LeafletJS/Google Maps — Solo Dev için Nice-to-have.)
+  - Map View (Harita): FAZ 2 HEDEFİ. MVP'de yer almaz. (LeafletJS/Google Maps — Solo Dev için Nice-to-have.)
 
 - Yönetim Fonksiyonları:
 
-    - Coğrafi: İl/İlçe seçimi (koordinat yerine API parametresi).
+  - Coğrafi: İl/İlçe seçimi (koordinat yerine API parametresi).
 
-    - Zaman: Mesai saatleri (Açılış/Kapanış).
+  - Zaman: Mesai saatleri (Açılış/Kapanış).
 
-    - Ses: volume_music ve volume_announce ayrı slider'lar.
+  - Ses: volume_music ve volume_announce ayrı slider'lar.
 
-    - Targeting UI (Hedefleme): Anons planlarken Multi-select Tree View kullanılır. 'Tüm Antep Grubu' veya tek şube tek tıkla seçilir.
-
+  - Targeting UI (Hedefleme): Anons planlarken Multi-select Tree View kullanılır. 'Tüm Antep Grubu' veya tek şube tek tıkla seçilir.
 
 ## 15. Statek Control Desktop (Windows EXE)
 
@@ -415,7 +382,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - UX Mantığı: Karmaşık ayarlar web panelinde kalır; günlük operasyonel hız EXE kısayolu üzerinden sağlanır.
 
-
 ## 16. Ticari Yapı (Isolated Instances)
 
 > ✓ KURAL: Model: Standalone Master per Client. Her müşteri için ayrı Merkez Sunucu (VPS/Pi) kurulur. Veri izolasyonu tam.
@@ -423,7 +389,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 - Multi-tenant (SaaS) mimarisi şimdilik uygulanmaz.
 
 - Sunucu Bütçesi: Ticari süreklilik için aylık ~5$ VPS (Hetzner, DigitalOcean) projenin işletme maliyeti olarak kabul edilir.
-
 
 ## 17. Saha Operasyonu (Factory Protocol — Gold Image)
 
@@ -437,12 +402,9 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 - Cihaz sahaya gider, fişe takılır ve bu token ile merkeze bağlanır.
 
-
 # BÖLÜM 3 — VERİTABANI ŞEMASI (FINAL — PostgreSQL Merkez)
 
-
 Şema %100 tamamlanmıştır. Tablolar arası ilişkiler netleşmiştir.
-
 
 **Tablo: users (Yetkilendirme — Single Admin, RBAC YOK)**
 
@@ -453,7 +415,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 | password_hash | String | ✓ | Argon2 ile hash'lenmiş şifre |
 | is_vendor_admin | Boolean | ✓ | True=Geliştirici (/admin/* erişimi), False=Müşteri. Feature Flag Pattern. |
 | is_active | Boolean | ✓ | Hesap aktif mi? |
-
 
 **Tablo: branches (Şubeler — Ana Varlık)**
 
@@ -468,7 +429,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 | status | Boolean | ✓ | Online/Offline durumu |
 | volume_music | Integer (0-100) | ✓ | Fon müziği ses seviyesi |
 | volume_announce | Integer (0-100) | ✓ | Anons ses seviyesi |
-
 
 > ⚠ ÇÖZÜLEN ÇAKIŞMA: v12.6'da tek 'volume_level' sütunu vardı. v12.11 iki ayrı slider tanımladı. Çözüm: volume_music ve volume_announce olarak ikiye ayrıldı.
 
@@ -486,7 +446,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 | prayer_margin | Integer | ✓ | Ezan vaktinden kaç dk önce susulsun? (Örn: 1) |
 | city_code | Integer | ✓ | Diyanet API plaka kodu |
 
-
 **Tablo: media_files (Medya Deposu)**
 
 | Sütun | Tip | Zorunlu | Açıklama |
@@ -502,7 +461,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 
 > ⚠ AS-BUILT: `file_hash` ve `size_bytes` kolonları geliştirme sırasında eklendi. `file_hash` duplicate upload engelleme ve manifest hash-based diff için, `size_bytes` manifest RAM truncation koruması için kullanılır.
 
-
 **Tablo: media_targets (Müzik Dağıtımı — ACL/Sync Katmanı)**
 
 | Sütun | Tip | Zorunlu | Açıklama |
@@ -511,7 +469,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 | media_id | Integer (FK) | ✓ | media_files.id — Hangi müzik dosyası? |
 | target_type | Enum | ✓ | 'BRANCH', 'GROUP' veya 'ALL' |
 | target_id | Integer | — | Hedefin ID'si. ALL için NULL, GROUP için group_tag string |
-
 
 > ⚠ ÇÖZÜLEN ÇAKIŞMA: media_targets SADECE MÜZİK içindir (ACL/Sync katmanı). Soru: 'Gaziantep şubesinde hangi müzikler çalacak?' → media_targets. Soru: 'Saat 14:00'te hangi anons çalacak?' → schedules. Separation of Concerns: kesin çizgi.
 
@@ -528,11 +485,9 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 | end_time | Datetime | — | play_at + duration. Çakışma slot kilitleme için. |
 | is_active | Boolean | ✓ | Görev aktif mi? |
 
-
 > ⚠ ÇÖZÜLEN ÇAKIŞMA: schedules SADECE ANONS içindir (Event Trigger katmanı). playlists + playlist_items KALDIRILDI (over-engineering). Müzik shuffle/loop Agent State Machine'i tarafından dinamik olarak çözülür.
 
 > ⚠ AS-BUILT: `schedules` tablosuna `created_at` (DateTime) kolonu ve çakışma motorunu hızlandıran partial index eklendi. Alembic migration: `d4e5f6a7b8c9`.
-
 
 **Tablo: tts_jobs (TTS İş Kuyruğu — Genişleme)**
 
@@ -550,7 +505,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 | created_at | Timestamp | ✓ | İş oluşturma zamanı |
 | processed_at | Timestamp | — | İşlem tamamlanma zamanı |
 
-
 **Tablo: logs (Merkezi Log Deposu — Genişleme)**
 
 > ⚠ AS-BUILT: Bu tablo orijinal 7-tablo çekirdek şemasında yoktu. Agent'lardan gelen JSON logların merkeze akması (Log Ingestion) için eklendi.
@@ -564,7 +518,6 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 | message | Text | ✓ | Log mesajı |
 | timestamp | Timestamp | ✓ | Orijinal log zamanı (Agent saati) |
 | created_at | Timestamp | ✓ | Merkeze yazılma zamanı |
-
 
 ## Priority Stack — Agent State Machine (Kesin Hiyerarşi)
 
@@ -580,18 +533,15 @@ Bu kurallar her adımda, istisnasız geçerlidir. Hiçbir modül veya özellik b
 | P3 — SCHEDULED_ANNOUNCEMENT | Planlı Anons | APScheduler — local_schedules tablosundan yüklenir | Müzik PAUSE, anons çalar, biter → müzik RESUME. P1 aktifse anons P1 bitene kadar BEKLER (Runtime Blocking). |
 | P4 — BACKGROUND_MUSIC | Fon Müziği | media_targets'tan gelen dosya listesi, boot sonrası otomatik | Shuffle+Loop ile sürekli çalar. Üst kısıt yoksa aktiftir. Her olayda PAUSE, olay bitince RESUME. |
 
-
 - Runtime Blocking (P1 + P3 çakışması): P3 saati geldi ama P1 aktif → P3 bekler. P1 biter → P3 otonom RESUME. Merkez bu karara karışmaz.
 
 - Implementasyon: Priority Stack bir Python Enum veya sıralı if/elif zinciri olarak kodlanır. AI editöre açık talimat: bu sıralamayı değiştirme, genişletme, yorum katma.
 
 - Kill_active flag: P0 tetiklendiğinde lokal SQLite config tablosuna yazılır. Reboot sonrası da P0 aktif kalır. Sadece MQTT 'resume' komutu temizler.
 
-
 # BÖLÜM 3B — KRİTİK EKSİK SPESIFIKASYONLAR (Son Dokunuşlar)
 
 Bu bölüm, sistemin çalışması için zorunlu olan ancak önceki versiyonlarda belgelenmemiş 4 kritik spesifikasyonu içerir.
-
 
 ## 3B.1 MQTT Topic Naming Convention
 
@@ -607,14 +557,13 @@ Bu bölüm, sistemin çalışması için zorunlu olan ancak önceki versiyonlard
 | announceflow/+/+/cmd | Wildcard | Tüm şubelere aynı anda komut göndermek için (Toplu Yayın). |
 | announceflow/Gaziantep/# | Wildcard | Sadece Gaziantep şubelerini dinlemek için. |
 
-
 - QoS Seviyesi:
 
-    - Heartbeat (status): QoS 0 — Kayıp kabul edilir, performans öncelikli.
+  - Heartbeat (status): QoS 0 — Kayıp kabul edilir, performans öncelikli.
 
-    - Komutlar (cmd): QoS 1 — En az bir kez iletim garantisi.
+  - Komutlar (cmd): QoS 1 — En az bir kez iletim garantisi.
 
-    - LWT: QoS 1 — Çevrimdışı tespiti kritik, kayıp kabul edilemez.
+  - LWT: QoS 1 — Çevrimdışı tespiti kritik, kayıp kabul edilemez.
 
 **Komut Payload Örnekleri (cmd topic)**
 
@@ -625,7 +574,6 @@ Bu bölüm, sistemin çalışması için zorunlu olan ancak önceki versiyonlard
 | play_announce | {"action": "play_announce", "file_url": "/media/anons_123.mp3", "priority": 1} |
 | sync_now | {"action": "sync_now"} |
 | restart | {"action": "restart"} |
-
 
 ## 3B.2 İlk Açılış Akışı (Boot Sequence)
 
@@ -646,11 +594,9 @@ Bu bölüm, sistemin çalışması için zorunlu olan ancak önceki versiyonlard
 | 9 | Mesai saatini kontrol et | Mesai dışıysa: Sessiz mod. Mesai içindeyse: Müzik başlat. |
 | 10 | READY — Heartbeat başlat (1 dakika interval) | Her adım JSON loglanır. |
 
-
 ## 3B.3 Manifest Sync Sözleşmesi
 
 > ✓ KURAL: Master'ın yayınladığı manifest.json formatı ve Diff algoritması.
-
 
 **Master'ın Ürettiği manifest.json (As-Built — Gerçek Şema):**
 
@@ -695,7 +641,6 @@ Bu bölüm, sistemin çalışması için zorunlu olan ancak önceki versiyonlard
 
 - Pydantic şema kaynağı: `backend/schemas/manifest.py` — `ManifestResponse`, `ManifestMediaItem`, `ManifestScheduleItem`, `ManifestSettingsItem`
 
-
 **Manifest Sync Algoritması (Agent Tarafı)**
 
 | Adım | İşlem |
@@ -707,11 +652,9 @@ Bu bölüm, sistemin çalışması için zorunlu olan ancak önceki versiyonlard
 | 5 | İndirme tamamlandıktan sonra hash'i doğrula. Eşleşmezse dosyayı sil ve tekrar indir. |
 | 6 | Sync tamamlandığında Master'a POST /api/v1/agent/sync_confirm gönder. |
 
-
 - Tetikleyiciler: Boot sırasında (Adım 5) + MQTT'den 'sync_now' komutu geldiğinde + Her gece 03:00-04:00 arası (Jitter ile).
 
 - Kural: Sync işlemi arka planda (async) çalışır. Müzik çalmayı DURDURMAMALIR.
-
 
 ## 3B.4 Dosya Depolama Stratejisi (Master)
 
@@ -727,11 +670,9 @@ Bu bölüm, sistemin çalışması için zorunlu olan ancak önceki versiyonlard
 
 - Boyut Tahmini: Ortalama 5MB/MP3, şube başı 200 dosya → ~1GB/şube. 100 şube → ~100GB. Disk planlaması buna göre yapılır.
 
-
 # BÖLÜM 3D — FİNAL KAPANIŞ SPESİFİKASYONLARI
 
 Tüm soruların cevaplanmasıyla kapanan son açık maddeler. Bu bölümden sonra belgede hiçbir belirsizlik kalmamıştır.
-
 
 ## 3D.1 Anons Çakışma Yönetimi — Zaman Dilimi Kilitleme
 
@@ -746,13 +687,11 @@ Tüm soruların cevaplanmasıyla kapanan son açık maddeler. Bu bölümden sonr
 | Kullanıcı 14:05'e yüklüyor | Başarılı — çakışma yok. |
 | Global + Local aynı saate planlanmış gibi görünüyor | Bu durum oluşamaz — slot zaten kilitli, ikincisi sisteme giremez. |
 
-
 - schedules tablosuna end_time (Timestamp) sütunu eklenir. play_at + duration hesaplanarak yazılır.
 
 - API: POST /api/v1/schedules/check-conflict — Yükleme öncesi çakışma taraması. UI bu yanıta göre kullanıcıya gösterir.
 
 - Avantaj: Agent tarafı 'iki anons aynı anda' durumuyla hiç karşılaşmaz. State machine tamamen temiz kalır.
-
 
 ## 3D.2 TTS — Faz 2'ye Ertelendi (voice_engine Soyutlaması Korunuyor)
 
@@ -767,11 +706,9 @@ Tüm soruların cevaplanmasıyla kapanan son açık maddeler. Bu bölümden sonr
 | Coqui XTTS v2 | ❌ Kurulmaz | Faz 2'de Master'a kurulur (8GB RAM gerektirir) |
 | Voice cloning | ❌ | Faz 2'de opsiyonel özellik |
 
-
 - TTS Kuyruk Tablosu: tts_jobs — id, text_input, voice_profile, status (PENDING/PROCESSING/DONE/FAILED), output_path, created_at, processed_at
 
 > ⚠ AS-BUILT: tts_jobs tablosu ve TTS endpoint'leri Faz 2 hedefinden önce, Backend geliştirmesi sırasında implement edildi. Coqui XTTS v2 entegrasyonu, voice_profile_resolver ve asenkron iş kuyruğu aktif çalışmaktadır. `backend/models/tts.py`, `backend/services/tts_service.py`, `backend/services/voice_profile_resolver.py`.
-
 
 ## 3D.3 Harita (Map View) — Faz 2 Savaş Odası
 
@@ -787,13 +724,11 @@ Tüm soruların cevaplanmasıyla kapanan son açık maddeler. Bu bölümden sonr
 | 4 | Başarısız olursa | İl merkezi koordinatı kullanılır (fallback). Manuel düzeltme imkânı bırakılır. |
 | 5 | Rate limit koruması | Nominatim: 1 req/sn. Toplu geocoding gece 03:00'da çalışır. |
 
-
 - Harita UI (LeafletJS): Her şube → Renkli canlı Marker. MQTT Heartbeat'ten güncellenir.
 
 - 🟢 Online + müzik çalıyor  |  🟡 Disk>%90 veya CPU>80°C  |  🔴 LWT / Kill Switch aktif
 
 - Marker tıklanınca popup: şube adı, çalan şarkı, disk %, CPU temp, son sync zamanı.
-
 
 ## 3D.4 Teknik Borç Kapatma — Önceki Versiyonlarda Eksik Kalanlar
 
@@ -807,7 +742,6 @@ Tüm soruların cevaplanmasıyla kapanan son açık maddeler. Bu bölümden sonr
 
 - media_files.file_path sütunu: normalize sonrası gerçek dosya yolunu tutar.
 
-
 ### Kaldırılan Tablolar — Karar ve Gerekçe
 
 > ⚠ AS-BUILT: media_targets tablosu KALDIRILMADI — aktif olarak kullanılmaktadır. Önceki versiyondaki "kaldırıldı" kararı geliştirme sırasında geri alındı. media_targets = Müzik ACL katmanı (Hangi müzik hangi şubede?), schedules = Anons Trigger katmanı (Ne zaman hangi anons?). İki tablo farklı sorumlulukları üstlenir (Separation of Concerns). Bu ayrım Bölüm 3 şema tanımlarıyla ve PROJECT_VISION_PROMPT.md ile tutarlıdır.
@@ -815,7 +749,6 @@ Tüm soruların cevaplanmasıyla kapanan son açık maddeler. Bu bölümden sonr
 > ⚠ ÇÖZÜLEN ÇAKIŞMA: playlists + playlist_items tabloları KALDIRILDI: V1'de yoktu, schedules + media_files yeterli. shuffle/loop bilgisi branch_settings'te saklanır. Over-engineering tespit edildi ve temizlendi.
 
 - Sonuç: Veritabanı çekirdek şeması 7 tablo (users, branches, branch_settings, media_files, media_targets, schedules, prayer_times) + 2 genişleme tablosu (tts_jobs, logs). Toplam 9 tablo.
-
 
 ### Agent Lokal SQLite Şeması — Resmi 4 Tablo (Donduruldu)
 
@@ -830,7 +763,6 @@ Tüm soruların cevaplanmasıyla kapanan son açık maddeler. Bu bölümden sonr
 | local_schedules | Merkezin schedules tablosunun sadece bu cihazı ilgilendiren kısmı. | id, media_id, cron_expression, play_at, end_time |
 | prayer_times | Diyanet API'den çekilmiş 30 günlük önbellekli ezan saatleri. | date, fajr, sunrise, dhuhr, asr, maghrib, isha, fetched_at |
 
-
 - Tüm tablolar WAL Mode ile açılır: PRAGMA journal_mode=WAL — SD kart koruma, eş zamanlı okuma için şart.
 
 - schema_version mekanizması: Tablolara ek olarak tek satırlık schema_version kaydı tutulur (OTA migration için). Ayrı tablo değil, config tablosuna 'schema_version' key'i olarak eklenir.
@@ -838,7 +770,6 @@ Tüm soruların cevaplanmasıyla kapanan son açık maddeler. Bu bölümden sonr
 - APScheduler JobStore: schedule_jobs verisi APScheduler'ın kendi SQLAlchemy mekanizmasıyla aynı agent.db içine yazılır — ayrı tablo açılmaz, framework yönetir.
 
 - Agent hiçbir zaman Master PostgreSQL'e direkt bağlanmaz. Sadece HTTP/MQTT üzerinden iletişim kurar.
-
 
 ### voice_engine Modülü — Facade Pattern (MVP + Faz 2 Stub)
 
@@ -848,16 +779,15 @@ Tüm soruların cevaplanmasıyla kapanan son açık maddeler. Bu bölümden sonr
 
 - agent/voice_engine/__init__.py yapısı:
 
-    - class VoiceEngine (abstract): play(path), pause(), resume(), stop(), set_volume(int)
+  - class VoiceEngine (abstract): play(path), pause(), resume(), stop(), set_volume(int)
 
-    - class LibVLCBackend(VoiceEngine): — Gerçek implementasyon. python-vlc kullanır.
+  - class LibVLCBackend(VoiceEngine): — Gerçek implementasyon. python-vlc kullanır.
 
-    - class TTSBackend(VoiceEngine): — Faz 2 stub. raise NotImplementedError('TTS: Faz 2')
+  - class TTSBackend(VoiceEngine): — Faz 2 stub. raise NotImplementedError('TTS: Faz 2')
 
-    - settings.VOICE_BACKEND = 'libvlc' | 'tts' — pydantic-settings'ten gelir.
+  - settings.VOICE_BACKEND = 'libvlc' | 'tts' — pydantic-settings'ten gelir.
 
-    - Factory: def get_voice_engine() -> VoiceEngine: return LibVLCBackend() if settings.VOICE_BACKEND == 'libvlc' else TTSBackend()
-
+  - Factory: def get_voice_engine() -> VoiceEngine: return LibVLCBackend() if settings.VOICE_BACKEND == 'libvlc' else TTSBackend()
 
 ### Factory Injection Script — Otomasyon
 
@@ -865,18 +795,17 @@ Tüm soruların cevaplanmasıyla kapanan son açık maddeler. Bu bölümden sonr
 
 - inject_token.sh çalışma akışı:
 
-    - 1. /admin/branches/generate-token API'si çağrılır → UUID token üretilir, DB'ye 'provisioned=False' yazılır.
+  - 1. /admin/branches/generate-token API'si çağrılır → UUID token üretilir, DB'ye 'provisioned=False' yazılır.
 
-    - 2. SD kart PC'ye takılır → script boot partition'ı mount eder.
+  - 2. SD kart PC'ye takılır → script boot partition'ı mount eder.
 
-    - 3. /boot/device_token.txt'ye token yazılır. CPU Serial Lock kaydı eklenir.
+  - 3. /boot/device_token.txt'ye token yazılır. CPU Serial Lock kaydı eklenir.
 
-    - 4. Unmount → Kart güvenli çıkarılır.
+  - 4. Unmount → Kart güvenli çıkarılır.
 
-    - 5. Token DB'de 'provisioned=True' olarak işaretlenir. Aynı token iki kez kullanılamaz.
+  - 5. Token DB'de 'provisioned=True' olarak işaretlenir. Aynı token iki kez kullanılamaz.
 
 - Parametre: ./inject_token.sh <branch_id> <token_uuid> — İkisi de /admin panelinden kopyalanır.
-
 
 ### Best Practice: pydantic-settings + FastAPI BackgroundTasks
 
@@ -884,21 +813,19 @@ Tüm soruların cevaplanmasıyla kapanan son açık maddeler. Bu bölümden sonr
 
 - pydantic-settings kurulumu:
 
-    - from pydantic_settings import BaseSettings
+  - from pydantic_settings import BaseSettings
 
-    - class Settings(BaseSettings): DATABASE_URL: str; MQTT_BROKER: str; VOICE_BACKEND: str = 'libvlc'; model_config = SettingsConfigDict(env_file='.env')
+  - class Settings(BaseSettings): DATABASE_URL: str; MQTT_BROKER: str; VOICE_BACKEND: str = 'libvlc'; model_config = SettingsConfigDict(env_file='.env')
 
-    - settings = Settings() — Uygulama genelinde tek instance. Hardcoded config yasak.
-
+  - settings = Settings() — Uygulama genelinde tek instance. Hardcoded config yasak.
 
 - FastAPI BackgroundTasks (FFmpeg için):
 
-    - @router.post('/media/upload') async def upload(bg: BackgroundTasks, file: UploadFile):
+  - @router.post('/media/upload') async def upload(bg: BackgroundTasks, file: UploadFile):
 
-    - bg.add_task(normalize_audio, temp_path, output_path) → return {'status': 'processing'}
+  - bg.add_task(normalize_audio, temp_path, output_path) → return {'status': 'processing'}
 
-    - Neden Celery değil: Celery = Redis + Worker process + Task queue + monitoring. Solo dev, tek sunucu, 100 şube için overkill. BackgroundTasks: FastAPI içinde, ekstra servis yok, 0 overhead.
-
+  - Neden Celery değil: Celery = Redis + Worker process + Task queue + monitoring. Solo dev, tek sunucu, 100 şube için overkill. BackgroundTasks: FastAPI içinde, ekstra servis yok, 0 overhead.
 
 ### SQLite Agent Migration Stratejisi
 
@@ -910,7 +837,6 @@ Tüm soruların cevaplanmasıyla kapanan son açık maddeler. Bu bölümden sonr
 
 - Kural: Tüm migration SQL'leri idempotent olmalı (iki kez çalışsa bile bozulmasın).
 
-
 ### APScheduler Job Persistence (Reboot Sonrası)
 
 > ✓ KURAL: Agent reboot'ta APScheduler job'larını SQLite'tan yükler. Offline-First ile tam uyumlu.
@@ -921,11 +847,9 @@ Tüm soruların cevaplanmasıyla kapanan son açık maddeler. Bu bölümden sonr
 
 - Sonuç: Cihaz kapanıp açılsa bile tüm zamanlanmış anonslar kaybolmaz.
 
-
 # BÖLÜM 3C — KİŞİSELLEŞTİRİLMİŞ TEKNİK SPESİFİKASYONLAR
 
 Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler onaylanmış ve projeye özeldir.
-
 
 ## 3C.1 Ses Çıkışı ve Audio Backend
 
@@ -941,7 +865,6 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 | pygame.mixer | Basit API, yaygın | Sadece WAV native, MP3 decoder instabil, Pi'de ses takılması sorunu var | ❌ |
 | subprocess + mpg123 | Hafif, shell üzerinden | Pause/Resume kontrolü zorlu, state machine kurmak zor | ❌ |
 
-
 - Kurulum (Agent Dockerfile'a eklenecek): apt-get install -y libvlc-dev vlc-bin + pip install python-vlc
 
 - ALSA Konfigürasyonu: /etc/asound.conf ile varsayılan cihaz 3.5mm jack'e sabitlenir. HDMI ses otomatik seçilmesini engeller.
@@ -950,10 +873,9 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 
 - V1 Uyumu: V1'de de aynı çıkış kullanılıyorsa, audio backend seçimi büyük ihtimalle aynıdır. legacy_reference/player.py incelenirken hangi kütüphane kullandığı kontrol edilmeli ve uyum sağlanmalıdır.
 
-
 ## 3C.2 Ezan API — Diyanet İşleri Entegrasyonu
 
-> ✓ KURAL: Veri Kaynağı: Diyanet İşleri Resmi API. Endpoint: https://api.ezanvakti.emushaf.net veya vakit.diyanet.gov.tr (V1'deki endpoint kontrol edilmeli).
+> ✓ KURAL: Veri Kaynağı: Diyanet İşleri Resmi API. Endpoint: <https://api.ezanvakti.emushaf.net> veya vakit.diyanet.gov.tr (V1'deki endpoint kontrol edilmeli).
 
 - Strateji: Her bağlantıda önümüzdeki 30 günün vakitlerini çek → SQLite'a kaydet → İnternet yoksa cache'den oku.
 
@@ -972,9 +894,7 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 | Failover (Force Majeure) | Cache 0 güne düşerse ve internet yoksa: Ezan özelliği devre dışı kalır, sistem müzik+anons çalmaya devam eder. Loglanır ve admin'e Telegram bildirimi gider. |
 | SQLite Tablo | prayer_times: id, branch_id, date (DATE), fajr, sunrise, dhuhr, asr, maghrib, isha (TIME), fetched_at (TIMESTAMP) |
 
-
 - V1 Legacy Notu: V1'de ezan takibi prod'da sorunsuz çalışıyor. legacy_reference'dan Diyanet API fonksiyonu ve cache mantığı öncelikli olarak alınacak — bu kodu sıfırdan yazmaya gerek yok.
-
 
 ## 3C.3 Legacy Reference — Güncellenmiş Tablo (V1 Prod'da Çalışıyor)
 
@@ -994,13 +914,11 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 | Config/Hardcoded secrets | ❌ BIRAK | Güvenlik riski. Tüm config .env'e taşınacak. |
 | requirements.txt | ⚠️ İNCELE | Kütüphane listesine bak, güncel versiyonları araştır. Direkt kopyalama. |
 
-
 ## 3C.4 Auth, Rol Yapısı ve Dashboard Mimarisi — DOĞRU VERSİYON
 
 > ✓ KURAL: Model: HaaS (Hardware as a Service). Altyapıyı sen kurarsın, Operasyonel Kontrolü müşteri yönetir. RBAC YOK. clients tablosu YOK. Lean Single-Admin JWT mimarisi.
 
 > ⚠ ÇÖZÜLEN ÇAKIŞMA: Önceki versiyonda 'super_admin + client_admin + clients tablosu' eklenmiş. Bu YANLIŞ bir mimari karardı. Her kurulum izole ve bağımsız olduğu için multi-tenant yapıya gerek yok. Tamamen kaldırıldı.
-
 
 ### İş Modeli (HaaS — Hardware as a Service)
 
@@ -1011,11 +929,9 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 | Sen (Geliştirici) | SD kart hazırlar, donanımı kargolar, Master VPS'i kurar, şubeleri sisteme tanımlar, teknik sorunları uzaktan çözer. | Müşterinin anonsunu ayarlamaz, günlük operasyona karışmaz. |
 | Müşteri (Son Kullanıcı) | Dashboard'dan müzik yükler, anons zamanlar, ses ayarlar, mesai düzenler, acil durdurur. | Donanım ekleyemez/silemez. Teknik ayarlara erişemez. |
 
-
 - Her müşteri kendi izole sisteminde çalışır. Müşteriler birbirinden tamamen habersizdir.
 
 - Kurulum bitince işin biter. Teknik sorun çıkarsa müşteri seni arar, sen SSH/Alpemix ile uzaktan halledersin.
-
 
 ### Auth Mimarisi — Single Admin JWT (RBAC YOK)
 
@@ -1031,7 +947,6 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 | is_vendor_admin | Boolean | True = Sen (geliştirici). False = Müşteri. /admin/* route'larını korur. RBAC değil — Feature Flag Pattern. |
 | is_active | Boolean | Hesap aktif mi? Sözleşme bitince False. |
 
-
 - Kurulumda 2 hesap: Müşterinin tek sorumlu çalışanı (is_vendor_admin=False) + Senin teknik hesabın (is_vendor_admin=True).
 
 - JWT Claim: { 'sub': user_id, 'is_vendor_admin': true/false, 'exp': timestamp }
@@ -1040,20 +955,19 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 
 - FastAPI Best Practice — Dependency Injection Pattern:
 
-    - async def verify_vendor_admin(current_user = Depends(get_current_user)):
+  - async def verify_vendor_admin(current_user = Depends(get_current_user)):
 
-    - if not current_user.is_vendor_admin: raise HTTPException(status_code=403, detail='Yetersiz yetki')
+  - if not current_user.is_vendor_admin: raise HTTPException(status_code=403, detail='Yetersiz yetki')
 
-    - return current_user
+  - return current_user
 
-    - @router.get('/admin/branches') async def list_branches(admin = Depends(verify_vendor_admin)): ...
+  - @router.get('/admin/branches') async def list_branches(admin = Depends(verify_vendor_admin)): ...
 
 - Bu pattern tüm /admin/* route'larına eklenir. Tek tanım, her yerde kullanım (DRY). AI editöre açık talimat: tüm /admin router'larına Depends(verify_vendor_admin) ekle.
 
 - Müşteri /admin URL'ini bilse bile 403 alır. Middleware yok, rol tablosu yok — sadece 1 boolean, 1 satır kontrol.
 
 - clients tablosu: YOK. client_id FK'ları: YOK. Authorization middleware: YOK.
-
 
 ### Dashboard Mimarisi — Tek Panel, İki Kullanım Amacı
 
@@ -1066,7 +980,6 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 | Operational Plane (Müşteri) | Müşteri çalışanı | Müzik/anons yükle, zamanlama, ses seviyesi, mesai saati, kill switch. Altyapı görünmez. |
 | Infrastructure & Observability Plane (Sen) | Sen (teknik erişim) | Şube provisioning (branches tablosuna ekleme + token üretme), Fleet telemetri, Log Viewer, cihaz sağlık izleme. |
 
-
 - Müşteri Operational Plane'e girince: Şubeler listesi, ses ayarları, anons yönetimi, zamanlama. Teknik detay yok.
 
 - Sen Infrastructure Plane'e girince: Yeni Raspberry Pi tanımlama, Device Token üretme, MQTT heartbeat verileri (disk %, CPU temp, bağlantı durumu), JSON Log Viewer, Yeşil/Sarı/Kırmızı durum ışıkları.
@@ -1074,7 +987,6 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 - Ayrım nasıl sağlanır? URL prefix ile: /dashboard/* müşteri ekranları, /admin/* teknik ekranlar. Aynı JWT, aynı uygulama — sadece sayfalar ayrı.
 
 - Over-engineering değil: Bu SSR (Jinja2) ile basitçe iki farklı template klasörü demek. Ekstra middleware veya rol sistemi gerektirmez.
-
 
 ### Müşterinin Dashboard'dan Yapabileceği İşlemler (Tam Liste)
 
@@ -1087,7 +999,6 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 | Ses Seviyesi Ayarla | branches.volume_music / volume_announce güncellenir. MQTT Configuration Payload anında şubeye iletilir. |
 | Mesai Saati Düzenle | branch_settings.work_start / work_end güncellenir. Agent'ın lokal SQLite'ına sync edilir — offline'da da çalışır. |
 | Kill Switch / Acil Durdur | MQTT QoS 2 broadcast: announceflow/{city}/{branch_id}/killswitch. Agent State Machine tüm sesi keser, kill_active=true yazar. |
-
 
 ### Şube Provisioning — Zero-Touch Provisioning (4 Adım)
 
@@ -1102,11 +1013,9 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 | 3 — Zero-Touch Deploy | Mağaza Personeli | Pi'yi fişe ve internete takar. Başka bir şey yapmaz. | Pi Outbound MQTT/HTTP ile Merkeze 'Ben geldim, token'ım bu' der. Handshake otomatik. |
 | 4 — Operational Control | Müşteri | Dashboard'da şubenin ışığı 🔴'dan 🟢'e döner. | Müşteri artık o şubeye müzik, anons, ses ayarı yapabilir. |
 
-
 - 🔴→🟢 geçişi otomatiktir. Handshake başarılı olana kadar şube 'Beklemede' görünür, içerik gönderilemez.
 
 - Kargo senaryosu: Sen Gaziantep'teki masanda SD kartı hazırlarsın, kargolarsın. Mağaza personeli takıp çalıştırır. Bitti.
-
 
 ### Media Ingestion Pipeline — 4 Adımlı Teknik Akış
 
@@ -1121,9 +1030,7 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 | 3 | Entity Creation | İşlenen dosyanın adı, süresi, hash ve yolu PostgreSQL'deki media_files tablosuna kaydedilir. manifest.json güncellenir. |
 | 4 | Manifest-Based Sync | Müşteri 'Gaziantep şubelerine gönder' dediğinde hedef şubelere MQTT trigger gider. Agent diff alır, sadece yeni/değişen dosyayı HTTP ile çeker (Differential Pull). SD karta yazar. |
 
-
 - Kural: Tüm bu akış arka planda (async) çalışır. Müşteri upload'ı tamamladıktan sonra dashboard'da dosyayı görür, şubeler arka planda eşitlenir.
-
 
 ## 3C.5 Kill Switch — Acil Durdurma Sistemi
 
@@ -1138,23 +1045,21 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 | announceflow/{city}/{branch_id}/killswitch | Tek şube | {"action": "kill", "reason": "manual"} |
 | announceflow/ALL/killswitch/resume | Global devam | {"action": "resume"} |
 
-
 - Agent Davranışı (Kill Switch geldiğinde):
 
-    - Müzik anında STOP (PAUSE değil — acil durum).
+  - Müzik anında STOP (PAUSE değil — acil durum).
 
-    - Aktif anons varsa anında STOP.
+  - Aktif anons varsa anında STOP.
 
-    - 'kill_active: true' bayrağını SQLite'a yaz (Reboot sonrası da sessiz kalmak için).
+  - 'kill_active: true' bayrağını SQLite'a yaz (Reboot sonrası da sessiz kalmak için).
 
-    - Status heartbeat'e 'status: KILLED' ekle.
+  - Status heartbeat'e 'status: KILLED' ekle.
 
 - QoS: Kill switch mesajları QoS 2 (Exactly Once) ile gönderilir — kayıp kabul edilemez.
 
 - Resume: 'resume' komutu gelene kadar sistem sessiz kalır. Resume sonrası normal işleyişe döner.
 
 - Dashboard: Kırmızı 'ACİL DURDUR' butonu (tüm şubeler) + şube kartı üzerinde tekil durdurma.
-
 
 ## 3C.6 Playlist Mantığı ve Scheduler
 
@@ -1170,7 +1075,6 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 | Shuffle | Her döngüde listeyi karıştırır. Fisher-Yates. Aynı şarkı üst üste gelmez. | branch_settings.loop_mode = 'shuffle' |
 | Loop | Liste bitince başa döner. Shuffle ile birlikte çalışır. | branch_settings.loop_mode = 'shuffle_loop' |
 | Zaman Bazlı | Sabah 08-12 belirli dosyalar, öğleden sonra başkaları. | schedules tablosunda cron_expression + target_type ile yönetilir. |
-
 
 - branch_settings tablosuna eklenen sütun: loop_mode ENUM ('sequential', 'shuffle', 'loop', 'shuffle_loop') DEFAULT 'shuffle_loop'
 
@@ -1190,11 +1094,9 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 | Hafta içi her gün 08:30 | play_at = NULL, cron_expression = '30 8 * * 1-5' |
 | Mesai açılışında (work_start saatinde) | play_at = NULL, cron_expression otomatik üretilir: branch_settings.work_start okunarak |
 
-
 - Backend Kütüphanesi: APScheduler (BackgroundScheduler + SQLAlchemyJobStore). V1'deki zamanlama mantığı bu iskelete migrate edilir.
 
 - Çakışma Kuralı: Aynı anda birden fazla anons tetiklenirse — önce schedule oluşturulma zamanı, sonra hedef kapsam (ALL > GROUP > BRANCH) sıralaması uygulanır.
-
 
 ## 3C.7 Ses Formatı ve Media Pipeline
 
@@ -1213,74 +1115,71 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 | 7 | media_files tablosuna yazılır | file_path, hash, duration, size_bytes kaydedilir |
 | 8 | Manifest güncellenir | Hedeflenen şubelerin bir sonraki sync'te bu dosyayı alması sağlanır |
 
-
 - Normalizasyon Standardı: -14 LUFS (EBU R128). Tüm ses dosyaları aynı ses seviyesinde çalır — şarkılar arasında 'bir sessiz bir gürültülü' problemi olmaz.
 
 - Geçici Dosya Temizliği: /data/media/temp/ dizini her gece 02:00'da temizlenir (cron job).
 
 - Maksimum Dosya Boyutu: 500MB (ham format). Normalize sonrası MP3 genellikle çok daha küçük olur.
 
-
 # BÖLÜM 4 — GELİŞTİRME FAZLARI VE ROADMAP
-
 
 ## 🟢 FAZ 1 — KURULUM VE TEMEL (SETUP & FOUNDATION)
 
 ### Adım 0: Mimari ve Repo Kurulumu
 
-- [ ] Klasör: announceflow-v2 oluştur.
+- [x] Klasör: announceflow-v2 oluştur.
 
-- [ ] Git: git init ve .gitignore (Python/FastAPI template).
+- [x] Git: git init ve .gitignore (Python/FastAPI template).
 
-- [ ] Monorepo Yapısı: /backend, /agent, /shared klasörleri.
+- [x] Monorepo Yapısı: /backend, /agent, /shared klasörleri.
 
-- [ ] Migration: V1'den player.py, scheduler.py → legacy_reference/ içine kopyala (Sadece referans!).
+- [x] Migration: V1'den player.py, scheduler.py → legacy_reference/ içine kopyala (Sadece referans!).
 
-- [ ] Vision: PROJECT_VISION_PROMPT.md oluştur.
+- [x] Vision: PROJECT_VISION_PROMPT.md oluştur.
 
-- [ ] Auditor: AUDITOR_PROMPT.md oluştur (İçerik Bölüm 6'da).
+- [x] Auditor: AUDITOR_PROMPT.md oluştur (İçerik Bölüm 6'da).
 
 ### Adım 1: Veri Katmanı (Data Layer)
 
-- [ ] Infra (Dev): docker-compose.dev.yml (PostgreSQL + Mosquitto).
+- [x] Infra (Dev): docker-compose.dev.yml (PostgreSQL + Mosquitto).
 
-- [ ] Schema: SQLAlchemy Models (Bölüm 3'teki tüm tablolar).
+- [x] Schema: SQLAlchemy Models (Bölüm 3'teki tüm tablolar).
 
-- [ ] Migration: Alembic kurulumu ve ilk şemanın dondurulması.
-
+- [x] Migration: Alembic kurulumu ve ilk şemanın dondurulması.
 
 ## 🔵 FAZ 2 — MERKEZİ BEYİN (BACKEND)
 
 ### Adım 2: Güvenlik (Auth)
 
-- [ ] JWT & Handshake: Token tabanlı şube girişi.
+- [x] JWT & Handshake: Token tabanlı şube girişi.
 
-- [ ] Code Review: Auth modülü AUDITOR_PROMPT.md ile denetlenir.
+- [x] Code Review: Auth modülü AUDITOR_PROMPT.md ile denetlenir.
 
-- [ ] Test (Kritik Yol): Auth modülü için pytest.
+- [x] Test (Kritik Yol): Auth modülü için pytest.
 
 ### Adım 3: İş Mantığı (Core Services)
 
-- [ ] Media Engine: Chunked Upload + FFmpeg Normalization (-14 LUFS).
+- [x] Media Engine: Chunked Upload + FFmpeg Normalization (-14 LUFS).
 
-- [ ] TTS Service: Coqui XTTS v2 — asenkron kuyruk ile metinden anons üretme.
+- [x] TTS Service: Coqui XTTS v2 — asenkron kuyruk ile metinden anons üretme.
 
-- [ ] Voice Engine Abstraction Layer: voice_engine modülü oluşturulur.
+- [x] Voice Engine Abstraction Layer: voice_engine modülü oluşturulur.
 
-- [ ] Log Ingestion: Şubelerden gelen logları veritabanına yazan API.
+- [x] Log Ingestion: Şubelerden gelen logları veritabanına yazan API.
 
-- [ ] Heartbeat Monitor: MQTT LWT + 1 dakikalık Ping takibi ile cihaz sağlık izleme.
+- [x] Heartbeat Monitor: MQTT LWT + 1 dakikalık Ping takibi ile cihaz sağlık izleme.
 
-- [ ] Sync Engine: Manifest (Hash) tabanlı dosya senkronizasyon mantığı.
+- [x] Sync Engine: Manifest (Hash) tabanlı dosya senkronizasyon mantığı.
 
-- [ ] Scheduler: V1 mantığının DB destekli (PostgreSQL + Cron) hale getirilmesi.
+- [x] Scheduler: V1 mantığının DB destekli (PostgreSQL + Cron) hale getirilmesi.
 
-- [ ] Code Review: Tüm servisler AUDITOR_PROMPT.md ile denetlenir.
+- [x] Code Review: Tüm servisler AUDITOR_PROMPT.md ile denetlenir.
 
-- [ ] Test (Kritik Yol): Priority Manager ve Sync Engine unit testleri.
+- [x] Test (Kritik Yol): Priority Manager ve Sync Engine unit testleri.
 
-"🟠 FAZ 3 — UÇ BİRİM (AGENT)" eski olan, artık aşağıdaki değil bunun dönüştürülmüş ve projede somut olarak faz 3'e gelindikten sonra güncellenerek yeniden hazırlanmış ve güncel olarak aşağıya konulmuş faz 3 dikkate alınacaktır:
+"🟠 FAZ 3 — UÇ BİRİM (AGENT)" eski olan, artık aşağıdaki değil bunun dönüştürülmüş ve projede somut olarak faz 3'e gelindikten sonra güncellenerek yeniden hazırlanmış ve güncel olarak aşağıya konulmuş diğer faz 3 dikkate alınacaktır:
 "
+
 ## 🟠 FAZ 3 — UÇ BİRİM (AGENT)
 
 ### Adım 4: Ajan (The Player)
@@ -1308,36 +1207,42 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 🟠 FAZ 3 — UÇ BİRİM (AGENT) - RASPBERRY PI 4 (1GB RAM)
 (Not: Performans, mimari kalite veya kritik özelliklerden ödün verilmesi gerekecek bir darboğaz yaşanırsa, donanım 2GB RAM'e yükseltilecektir. Kod 1GB sınırlarına göre, RAM şişmesini önleyecek şekilde optimize yazılacaktır.)
 
-[ ⏳ ŞU AN ] Adım 1: Foundation (Hafıza + Sinir Sistemi + Zamanlayıcı İskeleti)
-  * agent.db: aiosqlite, WAL Mode, idempotent init_db(), Alembic YASAK.
-    - Tablolar: config (schema_version dahil), local_media, local_schedules, prayer_times
-  * AgentLogger: JSON format, stdout, flood protection (aynı hata saniyede >10 kez ise durdur).
-  * APScheduler İskeleti: BackgroundScheduler + SQLAlchemyJobStore (sadece başlatılır, job eklenmez).
-  * Mimari karar: aiosqlite thread-safety ve donanım I/O güvenliği için seçildi.
-  * Boot Sequence (Adım 1-3): CPU Serial oku -> token oku -> DB init.
+[ X ] Adım 1: Foundation (Hafıza + Sinir Sistemi + Zamanlayıcı İskeleti)
+
+- agent.db: aiosqlite, WAL Mode, idempotent init_db(), Alembic YASAK.
+  - Tablolar: config (schema_version dahil), local_media, local_schedules, prayer_times
+- AgentLogger: JSON format, stdout, flood protection (aynı hata saniyede >10 kez ise durdur).
+- APScheduler İskeleti: BackgroundScheduler + SQLAlchemyJobStore (sadece başlatılır, job eklenmez).
+- Mimari karar: aiosqlite thread-safety ve donanım I/O güvenliği için seçildi.
+- Boot Sequence (Adım 1-3): CPU Serial oku -> token oku -> DB init.
 
 [ 🔒 KİLİTLİ ] Adım 2: Sync Client & Handshake (Veri Boru Hattı)
-  * Boot Sequence (Adım 4-6): HTTP Register -> Manifest Diff -> aiofiles ile asenkron MP3 indir.
-  * SHA256 Doğrulama ve Sync Confirm API çağrısı.
-  * I/O Darboğaz Önlemi (Chunking): Büyük MP3'ler inerken Player'ı (sesi) kilitlememek ve SD kart veri yolunu boğmamak için indirme işlemi parçalı (chunked) yapılacak ve döngü aralarına 'await asyncio.sleep(0.01)' eklenecektir.
+
+- Boot Sequence (Adım 4-6): HTTP Register -> Manifest Diff -> aiofiles ile asenkron MP3 indir.
+- SHA256 Doğrulama ve Sync Confirm API çağrısı.
+- I/O Darboğaz Önlemi (Chunking): Büyük MP3'ler inerken Player'ı (sesi) kilitlememek ve SD kart veri yolunu boğmamak için indirme işlemi parçalı (chunked) yapılacak ve döngü aralarına 'await asyncio.sleep(0.01)' eklenecektir.
 
 [ 🔒 KİLİTLİ ] Adım 3: The Brain (Priority Manager & Ezan)
-  * Boot Sequence (Adım 7): Diyanet API cache (<7 gün ise yenile).
-  * State Machine (P0'dan P4'e): Kesin hiyerarşi (Kill Switch > Ezan > Mesai > Planlı > Fon).
-  * Legacy Business Logic: 'legacy_reference/player.py' ve 'scheduler.py' içindeki karar alma mantığı (if/else), modern ve asenkron State Machine'e dönüştürülerek kullanılacaktır (Kopyala-yapıştır yasak).
-  * APScheduler: local_schedules'dan job'ları register/deregister etme.
+
+- Boot Sequence (Adım 7): Diyanet API cache (<7 gün ise yenile).
+- State Machine (P0'dan P4'e): Kesin hiyerarşi (Kill Switch > Ezan > Mesai > Planlı > Fon).
+- Legacy Business Logic: 'legacy_reference/player.py' ve 'scheduler.py' içindeki karar alma mantığı (if/else), modern ve asenkron State Machine'e dönüştürülerek kullanılacaktır (Kopyala-yapıştır yasak).
+- APScheduler: local_schedules'dan job'ları register/deregister etme.
 
 [ 🔒 KİLİTLİ ] Adım 4: The Muscle (Player & Voice Engine)
-  * agent/voice_engine entegrasyonu (LibVLCBackend).
-  * Priority Manager'ın PAUSE/RESUME emirlerini donanıma iletme.
-  * SQLite'a persistent shuffle hash yazılması (reboot sonrası kaldığı yerden devam).
+
+- agent/voice_engine entegrasyonu (LibVLCBackend).
+- Priority Manager'ın PAUSE/RESUME emirlerini donanıma iletme.
+- SQLite'a persistent shuffle hash yazılması (reboot sonrası kaldığı yerden devam).
 
 [ 🔒 KİLİTLİ ] Adım 5: Control Plane (MQTT Telemetry)
-  * Boot Sequence (Adım 8-10): MQTT bağlantısı, LWT tanımlaması.
-  * Heartbeat loop (1 dakika) ve Kill Switch / Config Update QoS 2 dinleyicileri.
+
+- Boot Sequence (Adım 8-10): MQTT bağlantısı, LWT tanımlaması.
+- Heartbeat loop (1 dakika) ve Kill Switch / Config Update QoS 2 dinleyicileri.
 
 [ 🔒 KİLİTLİ ] Adım 6: Sağlamlık (Watchdog & Offline Test)
-  * Graceful Degradation: İnternetsiz açılış simülasyonları ve donanım watchdog entegrasyonu.
+
+- Graceful Degradation: İnternetsiz açılış simülasyonları ve donanım watchdog entegrasyonu.
 
 ---
 
@@ -1369,12 +1274,9 @@ Bu bölüm, projeye özgü kararlar sorularak elde edilmiştir. Tüm maddeler on
 
 - [ ] Desktop Agent (System Tray App): FAZ 2 HEDEFİ. Müşterinin ofis bilgisayarında (Windows/Mac) çalışan hafif uygulama. System tray'de logo, tıklayınca mini panel: 'Panele Bağlan', temel şube durumu, ses seviyesi kısayolu. Teknoloji: Python + PyQt6 veya Electron (karar Faz 2'de). MVP'ye dahil değil.
 
-
 # BÖLÜM 5 — AUDITOR_PROMPT.md İÇERİĞİ
 
-
 Bu dosya, her özellik tamamlandığında Main Branch'e geçmeden önce uygulanır.
-
 
 ## ROLE
 
@@ -1406,11 +1308,9 @@ Bu kod, 'AnnounceFlow V2' (Offline-First IoT Audio System — Statek Sound) proj
 
 Hataları maddeler halinde listele ve her hata için 'Refactored Code' öner.
 
-
 # BÖLÜM 6 — PROJECT_VISION_PROMPT.md (Final Versiyon)
 
 Bu dosya, her yeni modüle başlarken 'İşçi LLM'ye verilecek bağlam dosyasıdır. İki taslak versiyonu analiz edilmiş, nihai tek versiyon aşağıda derlenmiştir.
-
 
 ## Versiyon Analizi — Hangisi Daha İyi?
 
@@ -1425,15 +1325,11 @@ Bu dosya, her yeni modüle başlarken 'İşçi LLM'ye verilecek bağlam dosyası
 | IP Protection | Bahsedilmiyor | Nuitka + Hardware Binding belirtilmiş ✓ |
 | Sonuç | Temel ruh iyi, teknik detay eksik | KAZANAN — Tüm anayasayı yansıtıyor ✓ |
 
-
 > ⚠ ÇÖZÜLEN ÇAKIŞMA: Versiyon 1'in 'Eğit & Açıkla' (hoca gibi anlat) maddesi çok değerlidir. Versiyon 2'ye eksik. Final versiyona eklendi.
-
 
 ## PROJECT_VISION_PROMPT.md — NİHAİ VERSİYON
 
-
 > ✓ KURAL: Bu dosyanın içeriği aşağıdaki kutudur. Yeni modül başlarken LLM'e bu bağlamı ver.
-
 
 **ROLÜN (Sen Kimsin?):**
 
@@ -1443,7 +1339,6 @@ Bu dosya, her yeni modüle başlarken 'İşçi LLM'ye verilecek bağlam dosyası
 
 - Beni 'Over-engineering' tuzağından koru. Solo Dev'im, bakımı basit olan çözümler sun.
 
-
 **HEDEFİMİZ (Ne Yapıyoruz?):**
 
 - Perakende zincirleri (100+ şube) için merkezi yönetilen, Offline-First, 'Statek Sound' markalı bir IoT Ses ve Anons sistemi kuruyoruz.
@@ -1451,7 +1346,6 @@ Bu dosya, her yeni modüle başlarken 'İşçi LLM'ye verilecek bağlam dosyası
 - Problem: Mağazalar ya çok pahalı sistemler ya da USB ile manuel müzik/anons yönetiyor.
 
 - Çözümümüz: Tek merkezden tüm şubelerin müziğini/anonsunu/ses seviyesini yönet; şube internetsiz kalsa da çalışmaya devam etsin.
-
 
 **TEKNİK ANAYASA ÖZETI (Source of Truth — FINAL):**
 
@@ -1463,26 +1357,25 @@ Bu dosya, her yeni modüle başlarken 'İşçi LLM'ye verilecek bağlam dosyası
 
 - Ses Mantığı (voice_engine Abstraction Layer):
 
-    - Pause & Resume: Anons gelince müzik PAUSE, bitince RESUME. Ducking YOK, Mixing YOK.
+  - Pause & Resume: Anons gelince müzik PAUSE, bitince RESUME. Ducking YOK, Mixing YOK.
 
-    - Merkezi TTS: Coqui XTTS v2 merkezde üretir, şube MP3 indirir.
+  - Merkezi TTS: Coqui XTTS v2 merkezde üretir, şube MP3 indirir.
 
-    - Öncelik: Ezan/Mesai Dışı > Anons > Fon Müziği.
+  - Öncelik: Ezan/Mesai Dışı > Anons > Fon Müziği.
 
 - Güvenlik & IP Koruma:
 
-    - Kodlar Nuitka ile Binary (.so) olarak derlenir. SD kartta okunabilir kod olmaz.
+  - Kodlar Nuitka ile Binary (.so) olarak derlenir. SD kartta okunabilir kod olmaz.
 
-    - Hardware Binding: Yazılım CPU Serial numarasına kilitlenir. Kopyalanmış SD kart başka Pi'de çalışmaz.
+  - Hardware Binding: Yazılım CPU Serial numarasına kilitlenir. Kopyalanmış SD kart başka Pi'de çalışmaz.
 
-    - Ağ: Şubeler dışarıdan erişilemez. Tüm bağlantılar Outbound (Şube→Merkez) yönünde.
+  - Ağ: Şubeler dışarıdan erişilemez. Tüm bağlantılar Outbound (Şube→Merkez) yönünde.
 
 - Loglama: JSON (Structured). Cihazda 30MB rotasyonlu, merkezde sınırsız. print() YASAKTIR.
 
 - Ezan & Mesai: Diyanet API tabanlı 30 günlük offline cache. Ezan/Mesai Dışı = Priority 1 (Sessizlik).
 
 - Design Patterns: Repository Pattern (Zorunlu), Singleton (DB), Modüler Monolit.
-
 
 **ÇALIŞMA PROTOKOLÜ (Kod vermeden önce 4 aşama uygula):**
 
@@ -1494,21 +1387,17 @@ Bu dosya, her yeni modüle başlarken 'İşçi LLM'ye verilecek bağlam dosyası
 
 - DENETLE: Kodu vermeden önce zihninde AUDITOR_PROMPT kriterlerini çalıştır (Güvenlik, IoT kısıtları, SD Kart ömrü, Repository Pattern, Type Hinting).
 
-
 **MÜHENDİSLİK PRENSİBİ (GOLDEN RULE):**
 
 - Her çözümü Design Patterns ve Best Practices merceğinden değerlendir.
 
 - Eğer istediğim yöntem bir Anti-Pattern ise veya 'Tekerleği yeniden icat etmek' anlamına geliyorsa (Auth, Loglama, DB bağlantısı için sıfırdan yazmak gibi) beni DURDUR ve sektör standardı kütüphaneyi öner.
 
-
 # BÖLÜM 7 — AĞ GÜVENLİĞİ (v12.22) ve RTC NOTU
-
 
 ## 7.1 Port Açma vs Port Dinleme — Teknik Açıklama
 
 Bu bölüm, 'Şubede neden port açmıyoruz?' sorusunu teknik ve ticari boyutlarıyla netleştirmek için anayasaya eklenmiştir.
-
 
 ### Şubede (Mağazada) Durum
 
@@ -1518,12 +1407,11 @@ Bu bölüm, 'Şubede neden port açmıyoruz?' sorusunu teknik ve ticari boyutlar
 
 - Neden? İki kritik sebep:
 
-    - Güvenlik: Port açmak, internetteki her saldırgana 'gel beni tara' demektir. (Detay aşağıda.)
+  - Güvenlik: Port açmak, internetteki her saldırgana 'gel beni tara' demektir. (Detay aşağıda.)
 
-    - Maliyet: Port açmak Statik IP gerektirir. 100 şubede bu devasa aylık ek maliyettir.
+  - Maliyet: Port açmak Statik IP gerektirir. 100 şubede bu devasa aylık ek maliyettir.
 
 - Doğru Yöntem: Agent (Şube), başlatıldığında Merkeze (Broker) doğru Outbound bağlantı açar. Dışarıdan hiç kimse şubeye doğrudan bağlanamaz.
-
 
 ### Merkezde (Sunucuda) Durum
 
@@ -1532,7 +1420,6 @@ Bu bölüm, 'Şubede neden port açmıyoruz?' sorusunu teknik ve ticari boyutlar
 - Merkez, 100 şubenin gelip bağlandığı 'Ev'dir. Bu kapıların açık olması zorunludur.
 
 - Diğer tüm portlar UFW kuralı ile DROP edilir.
-
 
 ### Port Açılırsa Ne Olur? (Risk Analizi)
 
@@ -1544,7 +1431,6 @@ Bu bölüm, 'Şubede neden port açmıyoruz?' sorusunu teknik ve ticari boyutlar
 | DDoS | Pi saniyede 1 milyon istek alıp kilitlenir. Müzik susar, sistem çevrimdışı olur. | 🔴 KRİTİK |
 | Zombi Ağı (Botnet) | Hacker cihaza Mining Script yükler. Cihaz müzik yerine Bitcoin kazar. Devlet sitelerine saldırı yapar, yasal sorumluluk sana ait olur. | 🔴 KRİTİK |
 | Statik IP Maliyeti | 100 şubede her biri için aylık Statik IP ücreti — büyük işletme maliyeti. | 🟡 MALİ |
-
 
 ### MQTT Tünel Mantığı — Merkez Şubeye Nasıl Ulaşır?
 
@@ -1558,7 +1444,6 @@ Bu bölüm, 'Şubede neden port açmıyoruz?' sorusunu teknik ve ticari boyutlar
 
 - Telefon Analojisi: Sen (Şube) arkadaşını (Merkez) aradın. Hat açık. Arkadaşın sana 'Sesi kıs' dediğinde telefonu kapatıp seni tekrar aramasına gerek yok — açık hattan konuşur. MQTT budur.
 
-
 **📂 03_CONSTITUTION.md — v12.22 Ekleme (Ağ ve Port Güvenlik Standartları):**
 
 - Şube (Agent) Güvenliği: Mağaza/Şube tarafındaki modemlerde asla Port Yönlendirme (Port Forwarding) yapılmayacaktır. Şubeler 'Dışarıdan Erişilemez' (Invisible) kalacaktır.
@@ -1568,7 +1453,6 @@ Bu bölüm, 'Şubede neden port açmıyoruz?' sorusunu teknik ve ticari boyutlar
 - MQTT Tünel Mantığı: Merkez, şubeye emir göndermek için Agent'ın açtığı Persistent Connection hattını kullanacaktır.
 
 - Merkez (Master) Kapıları: Sadece 80 (HTTP), 443 (HTTPS) ve 1883 (MQTT) portları açık. Diğerleri DROP.
-
 
 ## 7.2 RTC (Gerçek Zamanlı Saat) Notu — Raspberry Pi 4
 
@@ -1612,17 +1496,13 @@ Bu bölüm, 'Şubede neden port açmıyoruz?' sorusunu teknik ve ticari boyutlar
 | Bağımsızlık | Kendi piliyle çalışır. İnternet ve elektrik kesilse bile saati tutar. |
 | Raspberry Pi 5 Farkı | Pi 5'te bu ihtiyaç için fabrikasyon pil girişi var. Pi 4'te harici modül zorunlu. |
 
-
 > ✓ KURAL: Fabrika Protokolü Güncellemesi: Her SD karta device_token.txt enjekte edilirken, her cihaza DS3231 modülü de takılmalı ve Linux RTC servisi aktif edilmelidir.
 
-
 # BÖLÜM 10 — BAŞLANGIÇ REHBERİ (Legacy Reference + İlk Mesaj)
-
 
 ## 10.1 Legacy Reference — Ne Almalı, Ne Bırakmalı?
 
 > ✓ KURAL: Tavsiye: legacy_reference/ yaklaşımını YAP. V1'in çalışan ses mantığı çok değerli. Ama ne aldığına dikkat et.
-
 
 **V1'den Ne Alınır, Ne Alınmaz?**
 
@@ -1636,11 +1516,9 @@ Bu bölüm, 'Şubede neden port açmıyoruz?' sorusunu teknik ve ticari boyutlar
 | Hardcoded config / secrets | ❌ Bırak | Bunları almak, güvenlik açığını da almak demektir. |
 | requirements.txt | ⚠️ İncele | Kütüphane listesine bak, güncel versiyonları araştır. Direkt kopyalama. |
 
-
 - Komut: Eski projeyi aç → Sadece player.py, scheduler.py ve ezan modülünü announceflow-v2/legacy_reference/ içine kopyala → Geri kalanını açma.
 
 - AI Editöre söylenecek: 'Bu dosyaları oku ve mantığını anla, ama buradan tek satır import etme. Amacı referans.'
-
 
 ## 10.2 Hangi Editör? (Cursor vs Claude Code vs Codex)
 
@@ -1653,11 +1531,9 @@ Bu bölüm, 'Şubede neden port açmıyoruz?' sorusunu teknik ve ticari boyutlar
 | GitHub Copilot | Satır tamamlama | ❌ Bu proje için zayıf. Mimari kararlar veremez, sadece satır tamamlar. |
 | ChatGPT/Codex | Tek seferlik kod üretimi | ⚠️ Proje bağlamını tutamaz. Her mesajda context kaybı yaşanır. |
 
-
 ## 10.3 İlk Mesaj Stratejisi — Adım Adım
 
 > ✓ KURAL: Tam belgeyi ATMA. Bağlamı şişirir, AI editör boğulur. Parçalı ve sıralı ver.
-
 
 ### Mesaj 1 — Bağlam Kurma (PROJECT_VISION_PROMPT.md'yi ver)
 
@@ -1667,13 +1543,11 @@ Bu bölüm, 'Şubede neden port açmıyoruz?' sorusunu teknik ve ticari boyutlar
 
 - Beklenen çıktı: Klasör yapısı + her klasörün amacının açıklaması.
 
-
 ### Mesaj 2 — Veri Katmanı (Adım 1)
 
 - Şunu at: Bölüm 3 (Veritabanı Şeması) + ilgili Anayasa maddeleri (Repository Pattern, Type Hinting).
 
 - İstek: 'SQLAlchemy modellerini yaz. Önce Pydantic şemalarını (API sözleşmesi) oluştur, sonra modelleri.'
-
 
 ### Her Modülde Kullanılacak Şablon
 
@@ -1683,12 +1557,9 @@ Bu bölüm, 'Şubede neden port açmıyoruz?' sorusunu teknik ve ticari boyutlar
 
 - 3. Legacy referans varsa: 'legacy_reference/player.py içindeki şu mantığa bak: [satır X-Y]. Bunu modern async yapıyla yeniden yaz.' de.
 
-
 # BÖLÜM 11 — OPSİYONEL KARARLAR (FAZ 4'TE AÇILACAK)
 
-
 Aşağıdaki maddeler Faz 1-2-3 sürecinde geliştirmeyi engellemez. Dağıtım aşamasında değerlendirilir.
-
 
 ## 1. Uzaktan Müdahale — Final Karar
 
@@ -1698,13 +1569,11 @@ Aşağıdaki maddeler Faz 1-2-3 sürecinde geliştirmeyi engellemez. Dağıtım 
 
 - Stakeholder Erişimi: Alpemix (opsiyonel, Faz 4). RAM etkisi Heartbeat ile izlenir.
 
-
 ## 2. Sunucu Altyapısı
 
 - Seçenek: Herhangi bir VPS (Hetzner, DigitalOcean, yerli firmalar) — ~5$/ay.
 
 - Kod Docker ile yazıldığı için provider değişikliği kod değişikliği gerektirmez.
-
 
 ## 3. Ticari Koruma Uygulaması
 
@@ -1712,16 +1581,13 @@ Aşağıdaki maddeler Faz 1-2-3 sürecinde geliştirmeyi engellemez. Dağıtım 
 
 - Zamanlama: Kodlar tamamen bittiğinde, SD karta yüklemeden hemen önce.
 
-
 ## 4. Map View (Harita Modu)
 
 - Teknoloji: LeafletJS veya Google Maps API.
 
 - Zamanlama: FAZ 2 HEDEFİ. MVP'de yok. 100 şubeyi haritaya koymak Solo Dev için Nice-to-have.
 
-
 # BÖLÜM 12 — ÇAKIŞMA VE TUTARSIZLIK ÖZETİ (Tüm Kararlar)
-
 
 **Çözülen Tüm Tutarsızlıklar**
 
@@ -1756,16 +1622,13 @@ Aşağıdaki maddeler Faz 1-2-3 sürecinde geliştirmeyi engellemez. Dağıtım 
 | Şube Provisioning | Belirsizdi | Sadece sen eklersin. HaaS: donanım yoksa şube olmaz. |
 | Dashboard Dili | Belirtilmemişti | Sadece Türkçe |
 
-
 # BÖLÜM 13 — CURSOR BAŞLANGIÇ REHBERİ
-
 
 ## MD Formatı Sorusu — Net Cevap
 
 > ✓ KURAL: Bu DOCX senin referansın. Cursor'a TAMAMINI verme. Parçalı, amaçlı ve sıralı ver.
 
 > ⚠ ÇÖZÜLEN ÇAKIŞMA: 'Tüm dokümanı MD olarak atayım mı?' → HAYIR. Cursor'un context window'u sınırlı. 150 sayfalık belgeyi bir seferde verirsen AI ilk bölümleri hatırlar, geri kalanı unutur. Kritik kararlar kaybolur.
-
 
 ## Doğru Yöntem: 3 Dosya Stratejisi
 
@@ -1776,7 +1639,6 @@ Aşağıdaki maddeler Faz 1-2-3 sürecinde geliştirmeyi engellemez. Dağıtım 
 | PROJECT_VISION_PROMPT.md | Bölüm 6 içeriği (kısa, öz — 1-2 sayfa) | Her oturumda @mention et. Her zaman açık. |
 | AUDITOR_PROMPT.md | Bölüm 5'teki 8 maddelik denetim listesi | Modül bitiminde '@AUDITOR_PROMPT.md bu kodu denetle' ile çağır. |
 | docs/module_context.md | O anki modüle ait belge bölümleri | Her yeni modülde içeriği değiştir, ilgili bölümleri yapıştır. |
-
 
 ## Modül Başında Hangi Belge Bölümü Verilir?
 
@@ -1793,7 +1655,6 @@ Aşağıdaki maddeler Faz 1-2-3 sürecinde geliştirmeyi engellemez. Dağıtım 
 | Dashboard | Bölüm 2.14 (Frontend stack) + 2.5 (Heartbeat payload) + 3D.3 (Harita) |
 | Kill Switch | Bölüm 3C.5 (Kill switch MQTT) + 3B.1 (MQTT topic tablosu) |
 
-
 ## İlk Oturum — Adım Adım
 
 ### Adım 1 — Repo Kur (Terminal'de)
@@ -1806,18 +1667,15 @@ Aşağıdaki maddeler Faz 1-2-3 sürecinde geliştirmeyi engellemez. Dağıtım 
 
 - Bu DOCX'teki Bölüm 6 → docs/PROJECT_VISION_PROMPT.md
 
-
 ### Adım 2 — Legacy Reference
 
 - V1 projesini aç → player.py + scheduler.py + ezan modülünü legacy_reference/ içine kopyala.
 
 - Her dosyanın başına: # LEGACY REFERENCE — SADECE OKUMA. IMPORT YASAK.
 
-
 ### Adım 3 — Cursor'da İlk Mesaj
 
 "@PROJECT_VISION_PROMPT.md Bu projeyi anladın mı? Raspberry Pi 1GB RAM kısıtlarını ve Monorepo yapısını göz önünde bulundurarak klasör yapısını ve docker-compose.dev.yml dosyasını oluşturalım. PostgreSQL ve Mosquitto (MQTT Broker) servislerini içermeli."
-
 
 ### Adım 4 — Her Modülde
 
@@ -1828,7 +1686,6 @@ Aşağıdaki maddeler Faz 1-2-3 sürecinde geliştirmeyi engellemez. Dağıtım 
 - Modül bitince: '@AUDITOR_PROMPT.md Bu kodu denetle.'
 
 - Denetimden geçen kodu commit et.
-
 
 ## Belge Final Durum Özeti
 
