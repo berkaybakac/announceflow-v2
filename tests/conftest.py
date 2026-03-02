@@ -1,5 +1,6 @@
 import os
 from collections.abc import AsyncGenerator
+from pathlib import Path
 
 import pytest
 import pytest_asyncio
@@ -13,7 +14,9 @@ from backend.models.base import Base
 from backend.models.branch import Branch
 from backend.models.user import User
 
-TEST_DATABASE_URL = "sqlite+aiosqlite:///test.db"
+_TEST_DB_DIR = Path(__file__).resolve().parent / ".tmp"
+_TEST_DB_DIR.mkdir(exist_ok=True)
+TEST_DATABASE_URL = f"sqlite+aiosqlite:///{_TEST_DB_DIR / 'test.db'}"
 os.environ.setdefault("COQUI_TOS_AGREED", "1")
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)

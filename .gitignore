@@ -66,6 +66,7 @@ announceflow copy/
 .claude
 demo_outputs/
 test.db
+tests/.tmp/
 backend/config/voice_profiles.local.json
 data/media/temp/*
 !data/media/temp/.gitkeep

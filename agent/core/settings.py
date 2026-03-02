@@ -11,7 +11,7 @@ class AgentSettings(BaseSettings):
     )
 
     # --- Database ---
-    DB_PATH: str = "agent.db"  # SQLite dosya yolu (WAL mode)
+    DB_PATH: str = "data/agent.db"  # SQLite dosya yolu (WAL mode)
 
     # --- Boot ---
     TOKEN_PATH: str = "/boot/device_token.txt"  # Device token dosyasi
