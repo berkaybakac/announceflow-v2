@@ -63,6 +63,9 @@ README.backup.md
 legacy_reference/
 announceflow copy/
 
+# Docs
+docs/
+
 .claude
 demo_outputs/
 test.db

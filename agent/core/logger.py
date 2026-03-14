@@ -143,14 +143,14 @@ class AgentJsonFormatter(_BaseJsonFormatter):
 
     def add_fields(
         self,
-        log_record: dict,
+        log_data: dict,
         record: logging.LogRecord,
         message_dict: dict,
     ) -> None:
-        super().add_fields(log_record, record, message_dict)
-        log_record["timestamp"] = self.formatTime(record)
-        log_record["level"] = record.levelname
-        log_record["module"] = record.module
+        super().add_fields(log_data, record, message_dict)
+        log_data["timestamp"] = self.formatTime(record)
+        log_data["level"] = record.levelname
+        log_data["module"] = record.module
 
 
 # ---------------------------------------------------------------------------

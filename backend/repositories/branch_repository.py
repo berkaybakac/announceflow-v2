@@ -1,6 +1,8 @@
 from collections.abc import Sequence
+from typing import cast
 
 from sqlalchemy import func, select, update
+from sqlalchemy.engine import CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -47,11 +49,11 @@ class BranchRepository(BaseRepository[Branch]):
         Returns:
             True eğer satır güncellendiyse, False branch bulunamazsa.
         """
-        result = await self.session.execute(
+        result = cast(CursorResult, await self.session.execute(
             update(Branch)
             .where(Branch.id == branch_id)
             .values(is_online=is_online)
-        )
+        ))
         return result.rowcount > 0
 
     async def set_bulk_offline(self, branch_ids: list[int]) -> int:
@@ -64,12 +66,12 @@ class BranchRepository(BaseRepository[Branch]):
         """
         if not branch_ids:
             return 0
-        result = await self.session.execute(
+        result = cast(CursorResult, await self.session.execute(
             update(Branch)
             .where(Branch.id.in_(branch_ids))
             .where(Branch.is_online.is_(True))
             .values(is_online=False)
-        )
+        ))
         return result.rowcount
 
     # --- Sync Engine ---
@@ -83,11 +85,11 @@ class BranchRepository(BaseRepository[Branch]):
         Returns:
             True eğer satır güncellendiyse, False branch bulunamazsa.
         """
-        result = await self.session.execute(
+        result = cast(CursorResult, await self.session.execute(
             update(Branch)
             .where(Branch.id == branch_id)
             .values(last_sync_at=func.now(), sync_status=sync_status)
-        )
+        ))
         return result.rowcount > 0
 
 

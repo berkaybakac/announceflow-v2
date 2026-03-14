@@ -165,8 +165,8 @@ async def init_db() -> None:
         "SELECT value FROM config WHERE key = 'schema_version'"
     )
 
-    mode = journal_mode[0][0] if journal_mode else "unknown"
-    version = schema_row[0][0] if schema_row else "unknown"
+    mode = journal_mode[0][0] if journal_mode else "unknown"  # type: ignore[index]
+    version = schema_row[0][0] if schema_row else "unknown"  # type: ignore[index]
 
     logger.info(
         "init_db tamamlandi",

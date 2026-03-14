@@ -59,7 +59,7 @@ def _load_model() -> "TTS":  # type: ignore[name-defined]
     _configure_torch_weights_policy_for_tts()
     if settings.COQUI_TOS_AGREED:
         os.environ["COQUI_TOS_AGREED"] = "1"
-    from TTS.api import TTS  # noqa: N811
+    from TTS.api import TTS  # type: ignore[import-untyped]  # noqa: N811
 
     model = TTS(
         model_name=settings.TTS_MODEL_NAME,

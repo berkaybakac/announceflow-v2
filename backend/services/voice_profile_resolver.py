@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
 
 from backend.core.settings import settings
 
@@ -23,7 +23,7 @@ def _raise_resolution_error(
     reason_code: str,
     detail: str,
     registry_path: str,
-) -> None:
+) -> NoReturn:
     raise VoiceProfileResolutionError(
         reason_code=reason_code,
         detail=detail,

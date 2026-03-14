@@ -21,6 +21,7 @@
 
 ## Test Strategy
 
+- Type checks: `pyright`
 - Fast tests: `pytest -q`
 - Real XTTS smoke tests (manual): `pytest -m tts_smoke -o addopts='' -q -s`
 

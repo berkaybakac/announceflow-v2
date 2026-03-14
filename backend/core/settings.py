@@ -48,4 +48,4 @@ class Settings(BaseSettings):
     TTS_VOICE_PROFILE_REGISTRY_PATH: str = "./backend/config/voice_profiles.json"
 
 
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]

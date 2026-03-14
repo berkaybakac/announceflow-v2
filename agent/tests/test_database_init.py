@@ -79,6 +79,7 @@ class TestInitDbIdempotency:
             "AND name IN ('config', 'local_media', 'local_schedules', 'prayer_times')"
         )
         row = await cursor.fetchone()
+        assert row is not None
         assert row[0] == 4, "4 tablo olmalıydı"
 
     @pytest.mark.asyncio
@@ -102,6 +103,7 @@ class TestInitDbIdempotency:
             "SELECT value FROM config WHERE key = 'work_start'"
         )
         row = await cursor.fetchone()
+        assert row is not None
         assert row[0] == "09:00", (
             "INSERT OR IGNORE mevcut değeri ezmemeli — "
             f"beklenen '09:00', alınan '{row[0]}'"
@@ -119,7 +121,7 @@ class TestWalMode:
         db = await database.get_db()
         cursor = await db.execute("PRAGMA journal_mode")
         row = await cursor.fetchone()
-
+        assert row is not None
         assert row[0].lower() == "wal", (
             f"WAL mode aktif olmalıydı, '{row[0]}' döndü"
         )

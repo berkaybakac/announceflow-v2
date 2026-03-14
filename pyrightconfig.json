@@ -1,0 +1,6 @@
+{
+  "exclude": [
+    "legacy_reference",
+    ".venv"
+  ]
+}

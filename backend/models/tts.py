@@ -1,10 +1,14 @@
 import enum
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.models.base import Base, IdMixin
+
+if TYPE_CHECKING:
+    from backend.models.media import MediaFile
 
 
 class TTSJobStatus(str, enum.Enum):
@@ -32,4 +36,4 @@ class TTSJob(IdMixin, Base):
     )
     processed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    media: Mapped["MediaFile | None"] = relationship()  # noqa: F821
+    media: Mapped["MediaFile | None"] = relationship()

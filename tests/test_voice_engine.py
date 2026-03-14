@@ -55,7 +55,7 @@ class TestVoiceEngineABC:
         from agent.voice_engine import VoiceEngine
 
         with pytest.raises(TypeError):
-            VoiceEngine()
+            VoiceEngine()  # type: ignore[abstract]
 
 
 # ---------------------------------------------------------------------------
