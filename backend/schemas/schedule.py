@@ -36,13 +36,13 @@ class ScheduleCreate(BaseModel):
             )
 
         # cron_expression geçerlilik kontrolü
-        if has_cron and not croniter.is_valid(self.cron_expression):
+        if has_cron and self.cron_expression is not None and not croniter.is_valid(self.cron_expression):
             raise ValueError(
                 f"Geçersiz cron ifadesi: '{self.cron_expression}'"
             )
 
         # play_at geçmiş tarih kontrolü
-        if has_play_at:
+        if self.play_at is not None:
             now = datetime.now(tz=timezone.utc)
             play_at = self.play_at
             # Naive datetime'ı UTC kabul et

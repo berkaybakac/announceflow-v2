@@ -1,7 +1,8 @@
 from collections.abc import Sequence
 from datetime import datetime
 
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import and_, func, or_, select, true
+from sqlalchemy.engine import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.models.media import MediaFile, MediaType, TargetType
@@ -40,7 +41,7 @@ class ScheduleRepository(BaseRepository[Schedule]):
         branch_id: int,
         group_tag: str | None,
         limit: int | None = None,
-    ) -> Sequence[tuple[Schedule, MediaFile]]:
+    ) -> Sequence[Row[tuple[Schedule, MediaFile]]]:
         """
         Branch'e ait aktif anons schedule'larını media bilgisiyle getir.
 
@@ -75,7 +76,7 @@ class ScheduleRepository(BaseRepository[Schedule]):
 
     async def get_by_id_with_media(
         self, schedule_id: int
-    ) -> tuple[Schedule, MediaFile] | None:
+    ) -> Row[tuple[Schedule, MediaFile]] | None:
         """Schedule + media JOIN ile tek kayıt döndürür."""
         stmt = (
             select(Schedule, MediaFile)
@@ -90,7 +91,7 @@ class ScheduleRepository(BaseRepository[Schedule]):
         page: int,
         page_size: int,
         is_active: bool | None = None,
-    ) -> tuple[Sequence[tuple[Schedule, MediaFile]], int]:
+    ) -> tuple[Sequence[Row[tuple[Schedule, MediaFile]]], int]:
         """Dashboard için paginated schedule listesi (media JOIN).
 
         Returns: (rows, total_count)
@@ -128,7 +129,7 @@ class ScheduleRepository(BaseRepository[Schedule]):
         target_id: int | None,
         target_group: str | None,
         exclude_id: int | None = None,
-    ) -> tuple[Schedule, MediaFile] | None:
+    ) -> Row[tuple[Schedule, MediaFile]] | None:
         """Zaman aralığı + hedef kesişimi çakışma sorgusu.
 
         Strict interval overlap: A.play_at < B.end_time AND B.play_at < A.end_time
@@ -174,7 +175,7 @@ class ScheduleRepository(BaseRepository[Schedule]):
 
         # Candidate ALL ise — tüm hedeflerle çakışır
         if target_type == TargetType.ALL or target_type == "ALL":
-            target_filter = True  # Hedef filtresi yok — tümüyle çakışır
+            target_filter = true()  # Hedef filtresi yok — tümüyle çakışır
         else:
             target_filter = or_(*target_conditions)
 

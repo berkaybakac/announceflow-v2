@@ -67,7 +67,7 @@ class LibVLCBackend(VoiceEngine):
     """
 
     def __init__(self) -> None:
-        import vlc
+        import vlc  # type: ignore[import-untyped]
 
         self._instance = vlc.Instance("--no-video", "--quiet", "--no-xlib")
         if self._instance is None:
@@ -176,6 +176,7 @@ class LibVLCBackend(VoiceEngine):
         HW 100% = +4dB, HW 90% = -6dB, HW 80% = -15dB, HW 70% = -25dB
         Cozum: UI 0-9% = mute, UI 10-100% -> HW 70-100%
         """
+        success = False
         if volume < 10:
             success = self._run_amixer(["mute"])
             if success:

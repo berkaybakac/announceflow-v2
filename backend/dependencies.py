@@ -20,6 +20,8 @@ def _parse_subject_as_int(
     credentials_exc: HTTPException,
 ) -> int:
     sub = payload.get("sub")
+    if sub is None:
+        raise credentials_exc
     try:
         return int(sub)
     except (TypeError, ValueError):
