@@ -13,8 +13,8 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/announceflow
-      SECRET_KEY: 01234567890123456789012345678901
+      DATABASE_URL: "postgresql+asyncpg://postgres:postgres@localhost:5432/announceflow"
+      SECRET_KEY: "ci-secret-key-announceflow-0123456789abcdef"
       COQUI_TOS_AGREED: "1"
 
     steps:
