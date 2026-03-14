@@ -17,6 +17,7 @@ import os
 import platform
 import subprocess
 from abc import ABC, abstractmethod
+from typing import Any
 
 from agent.core.settings import agent_settings
 
@@ -65,6 +66,9 @@ class LibVLCBackend(VoiceEngine):
       --quiet    : VLC kendi log spam'ini kapatir
       --no-xlib  : Headless Pi4'te X11 bagimliligi olmaz
     """
+
+    _instance: Any  # vlc.Instance — __init__ sonrasi her zaman non-None
+    _player: Any    # vlc.MediaPlayer — __init__ sonrasi her zaman non-None
 
     def __init__(self) -> None:
         import vlc  # type: ignore[import-untyped]
