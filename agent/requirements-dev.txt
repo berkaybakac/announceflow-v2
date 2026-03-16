@@ -1,0 +1,4 @@
+-r requirements.txt
+
+# Keep for symmetry with backend requirements split.
+# Add agent-specific dev tools here when needed.

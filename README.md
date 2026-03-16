@@ -4,12 +4,17 @@
 
 - `python3.11 -m venv .venv`
 - `source .venv/bin/activate`
-- `./.venv/bin/python -m pip install -r backend/requirements.txt`
-- `./.venv/bin/python -m pip install -r agent/requirements.txt`
+- `./.venv/bin/python -m pip install -r requirements-dev.txt`
 - `cp .env.example .env` and fill required values
 - `docker compose -f docker-compose.dev.yml up -d db`
 - `./.venv/bin/alembic -c backend/alembic.ini upgrade head`
 - `./.venv/bin/uvicorn backend.main:app --reload`
+
+## Dependency Profiles
+
+- Local development (tests + type checks): `./.venv/bin/python -m pip install -r requirements-dev.txt`
+- Backend runtime only: `./.venv/bin/python -m pip install -r backend/requirements.txt`
+- Agent runtime only: `./.venv/bin/python -m pip install -r agent/requirements.txt`
 
 ## Critical Gotcha
 
