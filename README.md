@@ -26,9 +26,9 @@
 
 ## Test Strategy
 
-- Type checks: `pyright`
-- Fast tests: `pytest -q`
-- Real XTTS smoke tests (manual): `pytest -m tts_smoke -o addopts='' -q -s`
+- Type checks: `./.venv/bin/python -m pyright --pythonpath ./.venv/bin/python`
+- Fast tests: `./.venv/bin/python -m pytest -q`
+- Real XTTS smoke tests (manual): `./.venv/bin/python -m pytest -m tts_smoke -o addopts='' -q -s`
 
 ## Environment Constraints
 
