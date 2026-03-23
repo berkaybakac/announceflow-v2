@@ -4,6 +4,10 @@ source =
     agent
     shared
 branch = True
+parallel = True
+sigterm = True
+patch =
+    subprocess
 omit =
     */tests/*
     */alembic/*

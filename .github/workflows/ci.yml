@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -36,7 +38,31 @@ jobs:
         run: python -m pyright
 
       - name: Run tests
-        run: python -m pytest -q --cov=backend --cov=agent --cov=shared --cov-report=term-missing --cov-report=xml:coverage.xml
+        run: python -m pytest -q --cov=backend --cov=agent --cov=shared --cov-report=term-missing --cov-report=xml:coverage.xml --cov-fail-under=68
+
+      - name: Determine patch base SHA
+        id: patch_base
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE_SHA="${{ github.event.before }}"
+          fi
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            BASE_SHA="$(git rev-parse HEAD^ 2>/dev/null || true)"
+          fi
+
+          echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Enforce patch coverage (>= 80%)
+        if: steps.patch_base.outputs.base_sha != ''
+        run: |
+          python scripts/check_patch_coverage.py \
+            --coverage-xml coverage.xml \
+            --base-sha "${{ steps.patch_base.outputs.base_sha }}" \
+            --threshold 80
 
       - name: Upload coverage.xml artifact
         uses: actions/upload-artifact@v4
