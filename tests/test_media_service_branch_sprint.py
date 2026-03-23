@@ -1,8 +1,10 @@
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from fastapi import UploadFile
 
 from backend.core.settings import settings
 from backend.services import media_service
@@ -34,7 +36,7 @@ class _AsyncSessionContext:
 async def test_save_upload_to_temp_rejects_path_traversal() -> None:
     upload = _FakeUploadFile("../evil.mp3", [b"payload"])
     with pytest.raises(ValueError, match="Geçersiz dosya adı"):
-        await media_service.save_upload_to_temp(upload)
+        await media_service.save_upload_to_temp(cast(UploadFile, upload))
 
 
 @pytest.mark.asyncio
@@ -45,7 +47,7 @@ async def test_save_upload_to_temp_enforces_max_size_and_cleans_temp(
     upload = _FakeUploadFile("oversize.mp3", [b"x"])
 
     with pytest.raises(ValueError, match="maksimum boyutu aşıyor"):
-        await media_service.save_upload_to_temp(upload)
+        await media_service.save_upload_to_temp(cast(UploadFile, upload))
 
     temp_root = Path(settings.MEDIA_TEMP_PATH)
     assert list(temp_root.iterdir()) == []
@@ -58,7 +60,7 @@ async def test_save_upload_to_temp_writes_chunks_successfully(
     monkeypatch.setattr(settings, "MAX_UPLOAD_SIZE_MB", 1)
     upload = _FakeUploadFile(r"folder\safe_song.mp3", [b"abc", b"def"])
 
-    dest = await media_service.save_upload_to_temp(upload)
+    dest = await media_service.save_upload_to_temp(cast(UploadFile, upload))
     assert dest.name == "safe_song.mp3"
     assert dest.read_bytes() == b"abcdef"
 

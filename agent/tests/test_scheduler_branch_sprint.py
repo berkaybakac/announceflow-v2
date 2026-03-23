@@ -1,22 +1,26 @@
 from __future__ import annotations
 
+from collections.abc import Generator
+from pathlib import Path
+from typing import cast
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from sqlalchemy import text
+from sqlalchemy.engine import Engine
 
 from agent import scheduler as scheduler_module
 
 
 @pytest.fixture(autouse=True)
-def _reset_scheduler_singleton() -> None:
+def _reset_scheduler_singleton() -> Generator[None, None, None]:
     scheduler_module._scheduler = None
     yield
     scheduler_module._scheduler = None
 
 
 def test_create_engine_with_wal_sets_pragmas(
-    tmp_path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     db_path = tmp_path / "scheduler_jobs.db"
     monkeypatch.setattr(
@@ -25,7 +29,7 @@ def test_create_engine_with_wal_sets_pragmas(
         str(db_path),
     )
 
-    engine = scheduler_module._create_engine_with_wal()
+    engine = cast(Engine, scheduler_module._create_engine_with_wal())
     with engine.connect() as conn:
         journal_mode = conn.execute(text("PRAGMA journal_mode")).scalar_one()
         busy_timeout = conn.execute(text("PRAGMA busy_timeout")).scalar_one()
