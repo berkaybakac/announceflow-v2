@@ -30,6 +30,10 @@
 - Fast tests: `./.venv/bin/python -m pytest -q`
 - Real XTTS smoke tests (manual): `./.venv/bin/python -m pytest -m tts_smoke -o addopts='' -q -s`
 
+## Coverage
+
+- Generate coverage reports: `./.venv/bin/python -m pytest -q --cov=backend --cov=agent --cov=shared --cov-report=term-missing --cov-report=xml:coverage.xml --cov-report=html:htmlcov`
+
 ## Environment Constraints
 
 - `ffmpeg`

@@ -35,6 +35,7 @@ logs/
 # Testing & QA
 .pytest_cache/
 .coverage
+coverage.xml
 htmlcov/
 .mypy_cache/
 

@@ -1,0 +1,11 @@
+[run]
+source =
+    backend
+    agent
+    shared
+branch = True
+omit =
+    */tests/*
+    */alembic/*
+    */__pycache__/*
+    */.venv/*
