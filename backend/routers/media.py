@@ -113,7 +113,7 @@ async def upload_media(
 async def download_media(
     media_id: int,
     db: AsyncSession = Depends(get_db),
-    _current_device: Branch = Depends(get_current_device),
+    current_device: Branch = Depends(get_current_device),
 ) -> FileResponse:
     repo = MediaRepository(db)
     media = await repo.get_by_id(media_id)
@@ -121,6 +121,17 @@ async def download_media(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Medya bulunamadı.",
+        )
+
+    has_access = await repo.is_accessible_for_branch(
+        media_id=media_id,
+        branch_id=current_device.id,
+        group_tag=current_device.group_tag,
+    )
+    if not has_access:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bu medya için erişim yetkiniz yok.",
         )
 
     file_path = Path(media.file_path)

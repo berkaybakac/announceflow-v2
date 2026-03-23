@@ -6,7 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.security import create_access_token
 from backend.models.branch import Branch
-from backend.models.media import MediaFile, MediaType
+from backend.models.media import MediaFile, MediaTarget, MediaType, TargetType
+from backend.models.schedule import Schedule
 from backend.models.user import User
 
 
@@ -199,6 +200,13 @@ class TestMediaDownload:
             size_bytes=len(file_bytes),
         )
         db_session.add(media)
+        db_session.add(
+            MediaTarget(
+                media=media,
+                target_type=TargetType.BRANCH,
+                target_id=test_branch.id,
+            )
+        )
         await db_session.commit()
         await db_session.refresh(media)
 
@@ -210,6 +218,91 @@ class TestMediaDownload:
 
         assert resp.status_code == 200
         assert resp.headers["content-type"].startswith("audio/mpeg")
+        assert resp.content == file_bytes
+
+    async def test_download_returns_403_for_unscoped_media(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+        test_branch: Branch,
+        tmp_path: Path,
+    ):
+        file_path = tmp_path / "other-branch.mp3"
+        file_path.write_bytes(b"ID3other")
+
+        media = MediaFile(
+            file_name="other-branch.mp3",
+            file_path=str(file_path),
+            file_hash="e" * 64,
+            type=MediaType.MUSIC,
+            duration=45,
+            size_bytes=8,
+        )
+        other_branch = Branch(
+            name="Diger Sube",
+            city="Ankara",
+            district="Cankaya",
+            token="other-branch-token-uuid",
+            is_active=True,
+            volume_music=50,
+            volume_announce=80,
+        )
+        db_session.add_all([media, other_branch])
+        await db_session.flush()
+        db_session.add(
+            MediaTarget(
+                media_id=media.id,
+                target_type=TargetType.BRANCH,
+                target_id=other_branch.id,
+            )
+        )
+        await db_session.commit()
+
+        token = _device_token(test_branch)
+        resp = await client.get(
+            f"/api/v1/media/{media.id}/download",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 403
+
+    async def test_download_allows_anons_for_branch_schedule(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+        test_branch: Branch,
+        tmp_path: Path,
+    ):
+        file_bytes = b"ID3anons"
+        file_path = tmp_path / "anons.mp3"
+        file_path.write_bytes(file_bytes)
+
+        media = MediaFile(
+            file_name="anons.mp3",
+            file_path=str(file_path),
+            file_hash="f" * 64,
+            type=MediaType.ANONS,
+            duration=20,
+            size_bytes=len(file_bytes),
+        )
+        db_session.add(media)
+        await db_session.flush()
+        db_session.add(
+            Schedule(
+                media_id=media.id,
+                target_type=TargetType.BRANCH,
+                target_id=test_branch.id,
+                cron_expression="0 14 * * *",
+                is_active=True,
+            )
+        )
+        await db_session.commit()
+
+        token = _device_token(test_branch)
+        resp = await client.get(
+            f"/api/v1/media/{media.id}/download",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 200
         assert resp.content == file_bytes
 
     async def test_download_returns_404_when_media_missing(
@@ -239,6 +332,14 @@ class TestMediaDownload:
             size_bytes=123,
         )
         db_session.add(media)
+        await db_session.flush()
+        db_session.add(
+            MediaTarget(
+                media_id=media.id,
+                target_type=TargetType.BRANCH,
+                target_id=test_branch.id,
+            )
+        )
         await db_session.commit()
         await db_session.refresh(media)
 
