@@ -101,6 +101,8 @@ def compute_sha256(path: Path) -> str:
     return h.hexdigest()
 
 
+# TODO(P2): subprocess + metadata + DB update aynı fonksiyonda; bu dosyaya tekrar
+# girerken _run_ffmpeg / _compute_metadata / _update_media_record'a böl.
 async def normalize_audio(
     temp_path: Path,
     output_path: Path,

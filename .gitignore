@@ -38,6 +38,7 @@ logs/
 coverage.xml
 htmlcov/
 .mypy_cache/
+.ruff_cache/
 
 # Docker
 docker-compose.override.yml

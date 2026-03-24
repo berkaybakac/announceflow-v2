@@ -60,6 +60,8 @@ class MediaRepository(BaseRepository[MediaFile]):
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
+    # TODO(P2): MUSIC ve ANONS ACL koşulları ayrı _build_*_acl_conditions()
+    # helper'larına taşı; yeni target_type eklenince buraya bakılacak.
     async def is_accessible_for_branch(
         self,
         media_id: int,

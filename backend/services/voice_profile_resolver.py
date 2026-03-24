@@ -31,6 +31,8 @@ def _raise_resolution_error(
     )
 
 
+# TODO(P2): _load_json_file + _validate_registry_structure olarak ikiye böl;
+# voice profile formatı değişince buraya girilecek.
 def load_registry(path: str) -> dict[str, Any]:
     """Load and minimally validate the voice profile registry JSON."""
     registry_path = str(Path(path).expanduser())
