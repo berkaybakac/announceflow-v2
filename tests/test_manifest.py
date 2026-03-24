@@ -11,7 +11,6 @@ Test edilen bileşenler:
 
 from datetime import time
 
-import pytest
 from httpx import AsyncClient  # noqa: TC002
 from sqlalchemy.ext.asyncio import AsyncSession  # noqa: TC002
 

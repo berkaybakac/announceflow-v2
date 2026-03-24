@@ -2,7 +2,6 @@ from unittest.mock import AsyncMock, patch
 
 from httpx import AsyncClient
 
-from backend.models.tts import TTSJob, TTSJobStatus
 from backend.models.user import User
 
 

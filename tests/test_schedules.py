@@ -10,15 +10,12 @@ Test edilen bileşenler:
 
 from datetime import datetime, timedelta, timezone
 
-import pytest
-import pytest_asyncio
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.security import create_access_token
 from backend.models.branch import Branch
-from backend.models.media import MediaFile, MediaType, TargetType
-from backend.models.schedule import Schedule
+from backend.models.media import MediaFile, MediaType
 from backend.models.user import User
 
 

@@ -20,7 +20,6 @@ import asyncio
 import logging
 import platform
 import signal
-import sys
 
 import aiofiles
 

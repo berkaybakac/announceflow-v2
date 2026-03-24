@@ -12,7 +12,6 @@ from __future__ import annotations
 import logging
 from typing import Any, Optional
 
-import aiosqlite
 
 from agent.core.database import get_db
 

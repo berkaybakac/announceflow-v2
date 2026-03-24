@@ -1,0 +1,19 @@
+target-version = "py311"
+
+[lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes (undefined names, unused imports)
+    "B",   # flake8-bugbear (common bugs)
+    "BLE", # blind-except — except Exception yasak
+]
+ignore = [
+    "E501", # line too long — pyright zaten kontrol ediyor
+    "B008", # FastAPI Depends() pattern — kasıtlı, false positive
+]
+
+[lint.per-file-ignores]
+"tests/**/*.py" = ["BLE001", "B017"]        # test fixture cleanup + pytest.raises(Exception) OK
+"agent/tests/**/*.py" = ["BLE001", "B017"]  # aynı
+"**/alembic/**/*.py" = ["E501"]             # migration DDL
+"backend/services/tts_service.py" = ["F821"] # TTS conditional import, type: ignore zaten var

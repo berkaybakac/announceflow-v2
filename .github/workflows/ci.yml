@@ -34,6 +34,9 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements-dev.txt
 
+      - name: Run ruff linter
+        run: python -m ruff check .
+
       - name: Run pyright
         run: python -m pyright
 

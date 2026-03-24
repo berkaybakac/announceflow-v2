@@ -6,7 +6,7 @@ from sqlalchemy.engine import CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from backend.models.branch import Branch, BranchSettings
+from backend.models.branch import Branch
 from backend.repositories.base import BaseRepository
 
 

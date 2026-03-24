@@ -2,7 +2,6 @@ import time
 from datetime import datetime, timezone
 from unittest.mock import patch
 
-import pytest
 from httpx import AsyncClient  # noqa: TC002
 
 from backend.core.security import create_access_token
