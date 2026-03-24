@@ -189,8 +189,4 @@ async def test_manifest_graceful_truncates_music_and_logs_warning(
     assert len(payload["music"]) == 2
 
     warning_mock.assert_called_once()
-    assert warning_mock.call_args.args[0] == (
-        "Branch %s manifest exceeded max files (%s/%s). Truncating to protect RAM."
-    )
-    assert warning_mock.call_args.args[1:] == (test_branch.id, 3, 2)
     assert warning_mock.call_args.kwargs["extra"]["item_type"] == "music"

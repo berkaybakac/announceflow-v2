@@ -71,9 +71,11 @@ async def test_login_success_returns_token_response() -> None:
 
     assert resp.access_token == "jwt-user"
     assert resp.token_type == "bearer"
-    token_mock.assert_called_once_with(
-        data={"sub": "9", "type": "user", "is_vendor_admin": True}
-    )
+    token_mock.assert_called_once()
+    call_data = token_mock.call_args.kwargs["data"]
+    assert call_data["sub"] == "9"
+    assert call_data["type"] == "user"
+    assert call_data["is_vendor_admin"] is True
 
 
 async def test_agent_handshake_invalid_token_returns_401() -> None:

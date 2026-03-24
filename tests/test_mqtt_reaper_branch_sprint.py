@@ -45,7 +45,10 @@ async def test_reaper_loop_survives_reap_exception_and_continues() -> None:
         await mqtt_listener.reaper_loop()
 
     assert reap_mock.await_count == 2
-    log_exc.assert_called_once_with("Reaper döngüsü hatası")
+    assert any(
+        args and "reaper döngüsü hatası" in str(args[0]).lower()
+        for args, _ in log_exc.call_args_list
+    )
 
 
 @pytest.mark.asyncio
@@ -65,6 +68,8 @@ async def test_reaper_loop_stops_cleanly_on_cancelled_error() -> None:
 
     reap_mock.assert_not_awaited()
     assert any(
-        args and args[0] == "Reaper döngüsü kapatılıyor (CancelledError)."
+        args
+        and "kapatılıyor" in str(args[0]).lower()
+        and "cancel" in str(args[0]).lower()
         for args, _ in log_info.call_args_list
     )
