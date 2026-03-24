@@ -69,12 +69,8 @@ async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
     if test_session_factory is None:
         raise RuntimeError("test_session_factory is not initialized")
     async with test_session_factory() as session:
-        try:
-            yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
+        yield session
+        await session.commit()
 
 
 app.dependency_overrides[get_db] = override_get_db

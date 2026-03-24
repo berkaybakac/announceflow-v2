@@ -37,7 +37,7 @@ def _assert_prerequisites() -> None:
         raise AssertionError("Smoke requires Coqui TTS package (module 'TTS') installed")
     try:
         from transformers import BeamSearchScorer  # noqa: F401
-    except Exception as exc:
+    except (ImportError, AttributeError) as exc:
         raise AssertionError(
             "Smoke requires a transformers version exporting BeamSearchScorer"
         ) from exc

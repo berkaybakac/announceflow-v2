@@ -15,6 +15,8 @@ class AgentSettings(BaseSettings):
 
     # --- Boot ---
     TOKEN_PATH: str = "/boot/device_token.txt"  # Device token dosyasi
+    BOOT_TOKEN_RETRY_INTERVAL_SECONDS: float = 60.0  # Her deneme arasi bekleme
+    BOOT_TOKEN_MAX_RETRIES: int = 10  # <=0 ise sonsuz deneme
 
     # --- Logging ---
     LOG_LEVEL: str = "INFO"  # DEBUG | INFO | WARNING | ERROR

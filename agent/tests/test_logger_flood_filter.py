@@ -169,21 +169,27 @@ class TestFloodFilterConcurrency:
         self, flood_filter: FloodFilter
     ) -> None:
         """Çok thread altında filter() exception fırlatmamalı."""
-        errors: list[Exception] = []
+        errors: list[BaseException] = []
+        original_hook = threading.excepthook
 
         def worker(thread_id: int) -> None:
-            try:
-                for i in range(5000):
-                    record = _make_record(f"thread-{thread_id}-msg-{i}")
-                    flood_filter.filter(record)
-            except Exception as exc:  # pragma: no cover - negatif senaryo
-                errors.append(exc)
+            for i in range(5000):
+                record = _make_record(f"thread-{thread_id}-msg-{i}")
+                flood_filter.filter(record)
 
-        threads = [threading.Thread(target=worker, args=(i,)) for i in range(8)]
-        for thread in threads:
-            thread.start()
-        for thread in threads:
-            thread.join()
+        def _capture_thread_exception(args: threading.ExceptHookArgs) -> None:
+            if args.exc_value is not None:
+                errors.append(args.exc_value)
+
+        threading.excepthook = _capture_thread_exception
+        try:
+            threads = [threading.Thread(target=worker, args=(i,)) for i in range(8)]
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join()
+        finally:
+            threading.excepthook = original_hook
 
         assert errors == [], f"filter() thread-safe olmaliydi, hata: {errors}"
 

@@ -79,7 +79,7 @@ async def _read_cpu_serial() -> str:
 # ---------------------------------------------------------------------------
 async def _wait_or_shutdown(
     shutdown_event: asyncio.Event,
-    timeout_seconds: int,
+    timeout_seconds: float,
 ) -> bool:
     """Timeout dolana kadar veya shutdown sinyali gelene kadar bekler.
 
@@ -93,6 +93,25 @@ async def _wait_or_shutdown(
         return False
 
 
+def _normalize_retry_interval_seconds() -> float:
+    """Boot token retry bekleme suresini guvenli araliga ceker."""
+    interval = agent_settings.BOOT_TOKEN_RETRY_INTERVAL_SECONDS
+    if interval > 0:
+        return interval
+
+    logger.warning(
+        "BOOT_TOKEN_RETRY_INTERVAL_SECONDS gecersiz, varsayilan kullaniliyor",
+        extra={"configured_interval": interval, "fallback_interval": 1.0},
+    )
+    return 1.0
+
+
+def _max_retry_reached(retry_count: int) -> bool:
+    """Token okumada maksimum retry limiti asildi mi?"""
+    max_retries = agent_settings.BOOT_TOKEN_MAX_RETRIES
+    return max_retries > 0 and retry_count >= max_retries
+
+
 async def _read_device_token(shutdown_event: asyncio.Event) -> str | None:
     """Device token dosyasini okur.
 
@@ -104,6 +123,9 @@ async def _read_device_token(shutdown_event: asyncio.Event) -> str | None:
     Blueprint: 'Token yoksa hata logla, bekle.'
     """
     token_path = agent_settings.TOKEN_PATH
+    retry_count = 0
+    retry_interval_seconds = _normalize_retry_interval_seconds()
+    max_retries = agent_settings.BOOT_TOKEN_MAX_RETRIES
 
     while not shutdown_event.is_set():
         try:
@@ -111,11 +133,26 @@ async def _read_device_token(shutdown_event: asyncio.Event) -> str | None:
                 token = (await f.read()).strip()
 
             if not token:
+                retry_count += 1
                 logger.error(
                     "Device token dosyasi bos",
-                    extra={"path": token_path},
+                    extra={
+                        "path": token_path,
+                        "retry_count": retry_count,
+                        "max_retries": max_retries,
+                    },
                 )
-                if await _wait_or_shutdown(shutdown_event, 60):
+                if _max_retry_reached(retry_count):
+                    logger.error(
+                        "Device token okunamadi — maksimum deneme sayisina ulasildi",
+                        extra={
+                            "path": token_path,
+                            "retry_count": retry_count,
+                            "max_retries": max_retries,
+                        },
+                    )
+                    return None
+                if await _wait_or_shutdown(shutdown_event, retry_interval_seconds):
                     break
                 continue
 
@@ -126,19 +163,50 @@ async def _read_device_token(shutdown_event: asyncio.Event) -> str | None:
             return token
 
         except FileNotFoundError:
+            retry_count += 1
             logger.error(
                 "Device token dosyasi bulunamadi — bekleniyor",
-                extra={"path": token_path},
+                extra={
+                    "path": token_path,
+                    "retry_count": retry_count,
+                    "max_retries": max_retries,
+                },
             )
-            if await _wait_or_shutdown(shutdown_event, 60):
+            if _max_retry_reached(retry_count):
+                logger.error(
+                    "Device token okunamadi — maksimum deneme sayisina ulasildi",
+                    extra={
+                        "path": token_path,
+                        "retry_count": retry_count,
+                        "max_retries": max_retries,
+                    },
+                )
+                return None
+            if await _wait_or_shutdown(shutdown_event, retry_interval_seconds):
                 break
 
         except OSError as exc:
+            retry_count += 1
             logger.error(
                 "Device token okunamadi — bekleniyor",
-                extra={"path": token_path, "error": str(exc)},
+                extra={
+                    "path": token_path,
+                    "error": str(exc),
+                    "retry_count": retry_count,
+                    "max_retries": max_retries,
+                },
             )
-            if await _wait_or_shutdown(shutdown_event, 60):
+            if _max_retry_reached(retry_count):
+                logger.error(
+                    "Device token okunamadi — maksimum deneme sayisina ulasildi",
+                    extra={
+                        "path": token_path,
+                        "retry_count": retry_count,
+                        "max_retries": max_retries,
+                    },
+                )
+                return None
+            if await _wait_or_shutdown(shutdown_event, retry_interval_seconds):
                 break
 
     logger.info("Device token beklemesi shutdown nedeniyle sonlandirildi")
