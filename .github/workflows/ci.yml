@@ -40,6 +40,12 @@ jobs:
       - name: Run tests
         run: python -m pytest -q --cov=backend --cov=agent --cov=shared --cov-report=term-missing --cov-report=xml:coverage.xml --cov-fail-under=68
 
+      - name: Enforce global branch coverage (>= 70%)
+        run: |
+          python scripts/check_branch_coverage.py \
+            --coverage-xml coverage.xml \
+            --threshold 70
+
       - name: Determine patch base SHA
         id: patch_base
         shell: bash
