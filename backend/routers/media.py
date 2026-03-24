@@ -57,7 +57,7 @@ async def upload_media(
         temp_path = await media_service.save_upload_to_temp(file)
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail=str(e),
         )
 
