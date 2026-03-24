@@ -8,6 +8,7 @@ from pathlib import Path
 
 import aiofiles
 from fastapi import UploadFile
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from backend.core.database import async_session_factory
@@ -155,7 +156,7 @@ async def normalize_audio(
                 media.duration = duration
                 media.size_bytes = size_bytes
             await session.commit()
-        except Exception:
+        except (SQLAlchemyError, RuntimeError):
             await session.rollback()
             logger.exception(
                 "Failed to update media record after normalization",

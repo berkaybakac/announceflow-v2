@@ -22,6 +22,20 @@ from backend.services import heartbeat_service
 
 logger = logging.getLogger(__name__)
 
+_MESSAGE_PROCESSING_ERRORS = (RuntimeError, ValueError, TypeError, OSError)
+_LISTENER_RECOVERABLE_ERRORS = (OSError, RuntimeError, ValueError, TypeError)
+_REAPER_RECOVERABLE_ERRORS = (RuntimeError, ValueError, TypeError, OSError)
+
+
+async def _dispatch_message(topic: str, payload: bytes) -> None:
+    if topic.endswith("/status"):
+        await heartbeat_service.handle_status_message(topic, payload)
+        return
+    if topic.endswith("/lwt"):
+        await heartbeat_service.handle_lwt_message(topic)
+        return
+    logger.debug("Bilinmeyen topic: %s", topic)
+
 
 async def mqtt_listener_loop() -> None:
     """
@@ -48,15 +62,10 @@ async def mqtt_listener_loop() -> None:
                 async for message in client.messages:
                     topic = str(message.topic)
                     try:
-                        if topic.endswith("/status"):
-                            await heartbeat_service.handle_status_message(
-                                topic, message.payload
-                            )
-                        elif topic.endswith("/lwt"):
-                            await heartbeat_service.handle_lwt_message(topic)
-                        else:
-                            logger.debug("Bilinmeyen topic: %s", topic)
-                    except Exception:
+                        await _dispatch_message(topic, message.payload)
+                    except asyncio.CancelledError:
+                        raise
+                    except _MESSAGE_PROCESSING_ERRORS:
                         logger.exception("Mesaj işleme hatası: topic=%s", topic)
 
         except aiomqtt.MqttError as exc:
@@ -65,7 +74,7 @@ async def mqtt_listener_loop() -> None:
         except asyncio.CancelledError:
             logger.info("MQTT Listener kapatılıyor (CancelledError).")
             break
-        except Exception:
+        except _LISTENER_RECOVERABLE_ERRORS:
             logger.exception("MQTT Listener beklenmeyen hata — 5 sn sonra yeniden deneniyor")
             await asyncio.sleep(5)
 
@@ -89,5 +98,5 @@ async def reaper_loop() -> None:
         except asyncio.CancelledError:
             logger.info("Reaper döngüsü kapatılıyor (CancelledError).")
             break
-        except Exception:
+        except _REAPER_RECOVERABLE_ERRORS:
             logger.exception("Reaper döngüsü hatası")

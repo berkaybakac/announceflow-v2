@@ -100,7 +100,10 @@ async def get_db() -> aiosqlite.Connection:
             await db.execute("PRAGMA journal_mode=WAL")
             await db.execute("PRAGMA busy_timeout=5000")
             await db.execute("PRAGMA foreign_keys=ON")
-        except Exception:
+        except asyncio.CancelledError:
+            await db.close()
+            raise
+        except (aiosqlite.Error, OSError, RuntimeError):
             await db.close()
             raise
 

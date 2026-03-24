@@ -10,6 +10,63 @@ from backend.models.schedule import Schedule
 from backend.repositories.base import BaseRepository
 
 
+def _is_all_target(target_type: TargetType | str) -> bool:
+    return target_type == TargetType.ALL or target_type == "ALL"
+
+
+def _build_time_overlap_filter(play_at: datetime, end_time: datetime):
+    return and_(
+        Schedule.play_at < end_time,
+        Schedule.end_time > play_at,
+    )
+
+
+def _build_target_filter(
+    target_type: TargetType | str,
+    target_id: int | None,
+    target_group: str | None,
+):
+    if _is_all_target(target_type):
+        return true()
+
+    conditions = [Schedule.target_type == TargetType.ALL]
+    if target_type == TargetType.BRANCH or target_type == "BRANCH":
+        conditions.append(
+            and_(
+                Schedule.target_type == TargetType.BRANCH,
+                Schedule.target_id == target_id,
+            )
+        )
+    elif target_type == TargetType.GROUP or target_type == "GROUP":
+        conditions.append(
+            and_(
+                Schedule.target_type == TargetType.GROUP,
+                Schedule.target_group == target_group,
+            )
+        )
+    return or_(*conditions)
+
+
+def _build_overlap_stmt(
+    play_at: datetime,
+    end_time: datetime,
+    target_type: TargetType | str,
+    target_id: int | None,
+    target_group: str | None,
+):
+    return (
+        select(Schedule, MediaFile)
+        .join(MediaFile, MediaFile.id == Schedule.media_id)
+        .where(
+            Schedule.is_active.is_(True),
+            Schedule.play_at.is_not(None),
+            _build_time_overlap_filter(play_at, end_time),
+            _build_target_filter(target_type, target_id, target_group),
+        )
+        .limit(1)
+    )
+
+
 class ScheduleRepository(BaseRepository[Schedule]):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session, Schedule)
@@ -130,70 +187,9 @@ class ScheduleRepository(BaseRepository[Schedule]):
         target_group: str | None,
         exclude_id: int | None = None,
     ) -> Row[tuple[Schedule, MediaFile]] | None:
-        """Zaman aralığı + hedef kesişimi çakışma sorgusu.
-
-        Strict interval overlap: A.play_at < B.end_time AND B.play_at < A.end_time
-
-        Hedef kuralları:
-        - ALL vs herhangi = çakışır
-        - Aynı tip + aynı değer = çakışır
-        - Farklı BRANCH'ler veya farklı GROUP'lar = çakışmaz
-        """
-        # Zaman çakışma koşulu
-        time_overlap = and_(
-            Schedule.play_at < end_time,
-            Schedule.end_time > play_at,
-        )
-
-        # Hedef çakışma koşulları
-        target_conditions = [
-            # Mevcut kayıt ALL ise her şeyle çakışır
-            Schedule.target_type == TargetType.ALL,
-        ]
-
-        # Kandidat ALL ise mevcut her kayıtla çakışır (zaten yukarıda var,
-        # ama ayrıca candidate tarafı olarak da ALL'u ekleyelim)
-        if target_type == TargetType.ALL or target_type == "ALL":
-            # ALL candidate — tüm aktif tek seferlik schedule'larla çakışır
-            pass  # target_conditions zaten ALL'u kapsıyor, ek koşul gerekmiyor
-        else:
-            # Aynı tip + aynı değer çakışması
-            if target_type == TargetType.BRANCH or target_type == "BRANCH":
-                target_conditions.append(
-                    and_(
-                        Schedule.target_type == TargetType.BRANCH,
-                        Schedule.target_id == target_id,
-                    )
-                )
-            elif target_type == TargetType.GROUP or target_type == "GROUP":
-                target_conditions.append(
-                    and_(
-                        Schedule.target_type == TargetType.GROUP,
-                        Schedule.target_group == target_group,
-                    )
-                )
-
-        # Candidate ALL ise — tüm hedeflerle çakışır
-        if target_type == TargetType.ALL or target_type == "ALL":
-            target_filter = true()  # Hedef filtresi yok — tümüyle çakışır
-        else:
-            target_filter = or_(*target_conditions)
-
-        stmt = (
-            select(Schedule, MediaFile)
-            .join(MediaFile, MediaFile.id == Schedule.media_id)
-            .where(
-                Schedule.is_active.is_(True),
-                Schedule.play_at.is_not(None),
-                time_overlap,
-                target_filter,
-            )
-        )
-
+        """Tek-seferlik schedule için hedef+zaman çakışmasını bul."""
+        stmt = _build_overlap_stmt(play_at, end_time, target_type, target_id, target_group)
         if exclude_id is not None:
             stmt = stmt.where(Schedule.id != exclude_id)
-
-        stmt = stmt.limit(1)
-
         result = await self.session.execute(stmt)
         return result.first()

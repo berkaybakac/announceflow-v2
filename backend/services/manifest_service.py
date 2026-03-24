@@ -7,7 +7,7 @@ Agent'ın sync onayını kaydeder.
 
 from collections.abc import Sequence
 from datetime import datetime, timezone
-from typing import TypeVar
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -27,15 +27,14 @@ from backend.schemas.manifest import (
 from shared.logger import get_logger
 
 logger = get_logger(__name__)
-ItemT = TypeVar("ItemT")
 
 
 def _truncate_for_ram_safety(
     branch_id: int,
-    items: Sequence[ItemT],
+    items: Sequence[Any],
     max_files: int,
     item_type: str,
-) -> list[ItemT]:
+) -> list[Any]:
     if len(items) <= max_files:
         return list(items)
 
@@ -54,54 +53,36 @@ def _truncate_for_ram_safety(
     return list(items[:max_files])
 
 
-async def build_manifest(branch: Branch, db: AsyncSession) -> ManifestResponse:
-    """
-    Branch için tam manifest oluştur.
-
-    3 sorgu çalıştırır:
-    1. Müzikler — media_targets ACL (ALL ∪ BRANCH ∪ GROUP)
-    2. Anonslar — schedules ACL (ALL ∪ BRANCH ∪ GROUP) + media JOIN
-    3. Settings — branch_settings 1-to-1
-
-    Hash/size hesaplaması YAPILMAZ — DB'den hazır okunur.
-    """
-    media_repo = MediaRepository(db)
-    schedule_repo = ScheduleRepository(db)
-    branch_repo = BranchRepository(db)
-    max_files = settings.MANIFEST_MAX_FILES
-    fetch_limit = max_files + 1
-
-    # 1. Müzikler (ACL-aware, DISTINCT)
-    music_files = await media_repo.get_music_for_branch(
+async def _fetch_music_files(
+    branch: Branch,
+    media_repo: MediaRepository,
+    fetch_limit: int,
+    max_files: int,
+) -> list[Any]:
+    files = await media_repo.get_music_for_branch(
         branch.id,
         branch.group_tag,
         limit=fetch_limit,
     )
-    music_files = _truncate_for_ram_safety(
-        branch.id,
-        music_files,
-        max_files,
-        "music",
-    )
+    return _truncate_for_ram_safety(branch.id, files, max_files, "music")
 
-    # 2. Anonslar + Medya (ACL-aware, JOIN)
-    schedule_rows = await schedule_repo.get_schedules_for_branch_with_media(
+
+async def _fetch_announcement_rows(
+    branch: Branch,
+    schedule_repo: ScheduleRepository,
+    fetch_limit: int,
+    max_files: int,
+) -> list[Any]:
+    rows = await schedule_repo.get_schedules_for_branch_with_media(
         branch.id,
         branch.group_tag,
         limit=fetch_limit,
     )
-    schedule_rows = _truncate_for_ram_safety(
-        branch.id,
-        schedule_rows,
-        max_files,
-        "announcements",
-    )
+    return _truncate_for_ram_safety(branch.id, rows, max_files, "announcements")
 
-    # 3. Settings (eager load)
-    branch_with_settings = await branch_repo.get_with_settings(branch.id)
 
-    # --- Build music items ---
-    music_items = [
+def _build_music_items(music_files: Sequence[Any]) -> list[ManifestMediaItem]:
+    return [
         ManifestMediaItem(
             id=mf.id,
             file_name=mf.file_name,
@@ -113,8 +94,9 @@ async def build_manifest(branch: Branch, db: AsyncSession) -> ManifestResponse:
         for mf in music_files
     ]
 
-    # --- Build announcement items ---
-    announcement_items = [
+
+def _build_announcement_items(schedule_rows: Sequence[Any]) -> list[ManifestScheduleItem]:
+    return [
         ManifestScheduleItem(
             id=sched.id,
             media_id=media.id,
@@ -129,27 +111,52 @@ async def build_manifest(branch: Branch, db: AsyncSession) -> ManifestResponse:
         for sched, media in schedule_rows
     ]
 
-    # --- Build settings (strftime type safety) ---
-    settings_item = None
-    if (
-        branch_with_settings is not None
-        and branch_with_settings.settings is not None
-    ):
-        bs = branch_with_settings.settings
-        settings_item = ManifestSettingsItem(
-            work_start=bs.work_start.strftime("%H:%M"),
-            work_end=bs.work_end.strftime("%H:%M"),
-            volume_music=branch_with_settings.volume_music,
-            volume_announce=branch_with_settings.volume_announce,
-            loop_mode=bs.loop_mode,
-        )
 
+def _build_settings_item(branch_with_settings: Branch | None) -> ManifestSettingsItem | None:
+    if branch_with_settings is None or branch_with_settings.settings is None:
+        return None
+    branch_settings = branch_with_settings.settings
+    return ManifestSettingsItem(
+        work_start=branch_settings.work_start.strftime("%H:%M"),
+        work_end=branch_settings.work_end.strftime("%H:%M"),
+        volume_music=branch_with_settings.volume_music,
+        volume_announce=branch_with_settings.volume_announce,
+        loop_mode=branch_settings.loop_mode,
+    )
+
+
+async def _load_manifest_sources(
+    branch: Branch,
+    db: AsyncSession,
+) -> tuple[list[Any], list[Any], Branch | None]:
+    max_files = settings.MANIFEST_MAX_FILES
+    fetch_limit = max_files + 1
+    media_repo = MediaRepository(db)
+    schedule_repo = ScheduleRepository(db)
+    branch_repo = BranchRepository(db)
+    music_files = await _fetch_music_files(branch, media_repo, fetch_limit, max_files)
+    schedule_rows = await _fetch_announcement_rows(
+        branch,
+        schedule_repo,
+        fetch_limit,
+        max_files,
+    )
+    branch_with_settings = await branch_repo.get_with_settings(branch.id)
+    return music_files, schedule_rows, branch_with_settings
+
+
+async def build_manifest(branch: Branch, db: AsyncSession) -> ManifestResponse:
+    """Branch için ACL-aware manifest üretir."""
+    music_files, schedule_rows, branch_with_settings = await _load_manifest_sources(
+        branch,
+        db,
+    )
     return ManifestResponse(
         branch_id=branch.id,
         generated_at=datetime.now(timezone.utc).isoformat(),
-        music=music_items,
-        announcements=announcement_items,
-        settings=settings_item,
+        music=_build_music_items(music_files),
+        announcements=_build_announcement_items(schedule_rows),
+        settings=_build_settings_item(branch_with_settings),
     )
 
 

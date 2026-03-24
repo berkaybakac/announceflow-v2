@@ -14,12 +14,15 @@ import logging
 import re
 from typing import Any
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from backend.core.database import async_session_factory
 from backend.core.settings import settings
 from backend.repositories.branch_repository import BranchRepository
 from backend.services.telemetry_cache import telemetry_cache
 
 logger = logging.getLogger(__name__)
+_DB_RECOVERABLE_ERRORS = (SQLAlchemyError, OSError, RuntimeError)
 
 # Topic format: announceflow/{tenant}/{branch_id}/status (veya /lwt)
 # branch_id integer'a parse edilir, tenant şimdilik kullanılmaz (single-tenant).
@@ -57,6 +60,23 @@ def parse_payload(raw: bytes | str) -> dict[str, Any] | None:
         return None
 
 
+async def _set_online_status_with_db(
+    branch_id: int,
+    is_online: bool,
+    log_message: str,
+) -> bool | None:
+    async with async_session_factory() as session:
+        try:
+            repo = BranchRepository(session)
+            updated = await repo.set_online_status(branch_id, is_online=is_online)
+            await session.commit()
+            return updated
+        except _DB_RECOVERABLE_ERRORS:
+            await session.rollback()
+            logger.exception(log_message, branch_id)
+            return None
+
+
 async def handle_status_message(topic: str, raw_payload: bytes | str) -> None:
     """
     Status topic'inden gelen heartbeat mesajını işle.
@@ -76,15 +96,13 @@ async def handle_status_message(topic: str, raw_payload: bytes | str) -> None:
     payload: dict[str, Any] = parsed_payload or {}
 
     # DB'de online olarak işaretle
-    async with async_session_factory() as session:
-        try:
-            repo = BranchRepository(session)
-            updated = await repo.set_online_status(branch_id, is_online=True)
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            logger.exception("DB is_online güncellemesi başarısız: branch=%d", branch_id)
-            return
+    updated = await _set_online_status_with_db(
+        branch_id=branch_id,
+        is_online=True,
+        log_message="DB is_online güncellemesi başarısız: branch=%d",
+    )
+    if updated is None:
+        return
 
     # Bilinmeyen branch cache'e alınmaz (RAM büyümesi ve spoofing koruması).
     if not updated:
@@ -116,15 +134,13 @@ async def handle_lwt_message(topic: str) -> None:
     _, branch_id, _ = parsed
 
     # DB'de offline
-    async with async_session_factory() as session:
-        try:
-            repo = BranchRepository(session)
-            updated = await repo.set_online_status(branch_id, is_online=False)
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            logger.exception("DB LWT güncellemesi başarısız: branch=%d", branch_id)
-            return
+    updated = await _set_online_status_with_db(
+        branch_id=branch_id,
+        is_online=False,
+        log_message="DB LWT güncellemesi başarısız: branch=%d",
+    )
+    if updated is None:
+        return
 
     # Bilinmeyen branch için cache entry açma.
     if not updated:
@@ -166,7 +182,7 @@ async def reap_stale_branches() -> int:
                     count,
                     stale_ids,
                 )
-            except Exception:
+            except _DB_RECOVERABLE_ERRORS:
                 await session.rollback()
                 logger.exception("Reaper DB güncellemesi başarısız")
                 count = 0

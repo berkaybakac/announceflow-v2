@@ -31,6 +31,86 @@ from backend.services import media_service, tts_service
 router = APIRouter(prefix="/api/v1/media", tags=["media"])
 
 
+def _parse_media_type(media_type: str) -> MediaType:
+    try:
+        return MediaType(media_type.upper())
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"Geçersiz media_type. Kabul edilen: {[e.value for e in MediaType]}",
+        ) from exc
+
+
+async def _save_upload_or_raise(file: UploadFile) -> Path:
+    try:
+        return await media_service.save_upload_to_temp(file)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+            detail=str(exc),
+        ) from exc
+
+
+async def _cleanup_temp_path(temp_path: Path) -> None:
+    await asyncio.to_thread(shutil.rmtree, temp_path.parent, True)
+
+
+async def _validate_uploaded_audio(temp_path: Path) -> dict:
+    probe = await media_service.probe_audio(temp_path)
+    if probe["has_audio"]:
+        return probe
+    await _cleanup_temp_path(temp_path)
+    raise HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+        detail="Yüklenen dosya geçerli bir ses akışı içermiyor.",
+    )
+
+
+async def _check_duplicate_or_raise(repo: MediaRepository, temp_path: Path) -> str:
+    pre_hash = await asyncio.to_thread(media_service.compute_sha256, temp_path)
+    existing = await repo.get_by_hash(pre_hash)
+    if existing is None:
+        return pre_hash
+    await _cleanup_temp_path(temp_path)
+    raise HTTPException(
+        status_code=status.HTTP_409_CONFLICT,
+        detail=f"Aynı dosya zaten mevcut: media_id={existing.id}",
+    )
+
+
+async def _create_placeholder_media(
+    repo: MediaRepository,
+    file: UploadFile,
+    media_type: MediaType,
+    temp_path: Path,
+    pre_hash: str,
+    duration_seconds: int,
+) -> MediaFile:
+    media = MediaFile(
+        file_name=file.filename or "upload.mp3",
+        file_path=str(temp_path),
+        file_hash=pre_hash,
+        type=media_type,
+        duration=duration_seconds,
+        size_bytes=0,
+    )
+    return await repo.create(media)
+
+
+def _enqueue_normalization(
+    background_tasks: BackgroundTasks,
+    temp_path: Path,
+    media_id: int,
+) -> None:
+    final_output = Path(settings.MEDIA_STORAGE_PATH) / f"{media_id}.mp3"
+    background_tasks.add_task(
+        media_service.normalize_audio,
+        temp_path,
+        final_output,
+        media_id,
+    )
+
+
 @router.post(
     "/upload",
     response_model=MediaUploadResponse,
@@ -43,63 +123,20 @@ async def upload_media(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> MediaUploadResponse:
-    # 1. Validate media_type enum
-    try:
-        media_type_enum = MediaType(media_type.upper())
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail=f"Geçersiz media_type. Kabul edilen: {[e.value for e in MediaType]}",
-        )
-
-    # 2. Stream to temp disk
-    try:
-        temp_path = await media_service.save_upload_to_temp(file)
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-            detail=str(e),
-        )
-
-    # 3. Validate audio via ffprobe
-    probe = await media_service.probe_audio(temp_path)
-    if not probe["has_audio"]:
-        await asyncio.to_thread(shutil.rmtree, temp_path.parent, True)
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail="Yüklenen dosya geçerli bir ses akışı içermiyor.",
-        )
-
-    # 4. Duplicate check via SHA256
-    pre_hash = await asyncio.to_thread(media_service.compute_sha256, temp_path)
     repo = MediaRepository(db)
-    existing = await repo.get_by_hash(pre_hash)
-    if existing:
-        await asyncio.to_thread(shutil.rmtree, temp_path.parent, True)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Aynı dosya zaten mevcut: media_id={existing.id}",
-        )
-
-    # 5. Create DB record (placeholder — updated by background task)
-    media = MediaFile(
-        file_name=file.filename or "upload.mp3",
-        file_path=str(temp_path),
-        file_hash=pre_hash,
-        type=media_type_enum,
-        duration=probe["duration_seconds"],
-        size_bytes=0,
+    media_type_enum = _parse_media_type(media_type)
+    temp_path = await _save_upload_or_raise(file)
+    probe = await _validate_uploaded_audio(temp_path)
+    pre_hash = await _check_duplicate_or_raise(repo, temp_path)
+    media = await _create_placeholder_media(
+        repo=repo,
+        file=file,
+        media_type=media_type_enum,
+        temp_path=temp_path,
+        pre_hash=pre_hash,
+        duration_seconds=probe["duration_seconds"],
     )
-    media = await repo.create(media)
-
-    # 6. Schedule FFmpeg normalization
-    final_output = Path(settings.MEDIA_STORAGE_PATH) / f"{media.id}.mp3"
-    background_tasks.add_task(
-        media_service.normalize_audio,
-        temp_path,
-        final_output,
-        media.id,
-    )
+    _enqueue_normalization(background_tasks, temp_path, media.id)
 
     return MediaUploadResponse(
         media_id=media.id,
